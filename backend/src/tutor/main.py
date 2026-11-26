@@ -19,6 +19,7 @@ class LanguageOut(BaseModel):
     code: str
     name: str
     native_name: str
+    level_system: str
     levels: list[str]
 
 
@@ -32,7 +33,13 @@ def create_app() -> FastAPI:
     @app.get("/languages")
     def languages() -> list[LanguageOut]:  # pyright: ignore[reportUnusedFunction]
         return [
-            LanguageOut(code=p.code, name=p.name, native_name=p.native_name, levels=list(p.levels))
+            LanguageOut(
+                code=p.code,
+                name=p.name,
+                native_name=p.native_name,
+                level_system=p.level_system.name,
+                levels=list(p.levels),
+            )
             for p in LANGUAGES.values()
         ]
 

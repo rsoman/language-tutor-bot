@@ -9,8 +9,9 @@ The first target is German at CEFR A1, but more languages should be possible lat
 
 ## Decision
 
-Orchestration, retrieval, evals and guardrails take a language code and a CEFR level as
-inputs. Language-specific material lives in data, keyed by code:
+Orchestration, retrieval, evals and guardrails take a language code and a level as
+inputs. Levels belong to each language's own level system (CEFR for German, but other
+languages may use JLPT, HSK and so on), so no code assumes CEFR. Language-specific material lives in data, keyed by code:
 
 - `backend/src/tutor/languages.py`: the registry of supported languages and levels.
 - Later: `data/<code>/<level>/` for corpora, `prompts/<code>/` for language-specific prompt

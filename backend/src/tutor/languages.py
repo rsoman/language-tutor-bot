@@ -3,11 +3,22 @@
 Nothing outside this module should hard-code a language. Prompts, corpora and evals
 are looked up by `LanguageProfile.code`, so adding a language means adding a profile
 here plus its data, not changing orchestration code.
+
+Proficiency levels are also per language: European languages usually use CEFR
+(A1 to C2), while others have their own scales (for example JLPT for Japanese or
+HSK for Chinese). Each profile names its level system, so no code assumes CEFR.
 """
 
 from dataclasses import dataclass
 
-CEFR_LEVELS = ("A1", "A2", "B1", "B2", "C1", "C2")
+
+@dataclass(frozen=True)
+class LevelSystem:
+    name: str  # e.g. "CEFR"
+    levels: tuple[str, ...]  # all levels, easiest first
+
+
+CEFR = LevelSystem(name="CEFR", levels=("A1", "A2", "B1", "B2", "C1", "C2"))
 
 
 @dataclass(frozen=True)
@@ -15,11 +26,21 @@ class LanguageProfile:
     code: str  # ISO 639-1, e.g. "de"
     name: str  # English name, e.g. "German"
     native_name: str  # e.g. "Deutsch"
-    levels: tuple[str, ...]  # CEFR levels we have content for
+    level_system: LevelSystem
+    levels: tuple[str, ...]  # the levels we have content for, a subset of level_system.levels
+
+    def __post_init__(self) -> None:
+        unknown = [lvl for lvl in self.levels if lvl not in self.level_system.levels]
+        if unknown:
+            raise ValueError(
+                f"Levels {unknown} are not part of {self.level_system.name} for {self.code!r}"
+            )
 
 
 LANGUAGES: dict[str, LanguageProfile] = {
-    "de": LanguageProfile(code="de", name="German", native_name="Deutsch", levels=("A1",)),
+    "de": LanguageProfile(
+        code="de", name="German", native_name="Deutsch", level_system=CEFR, levels=("A1",)
+    ),
 }
 
 
