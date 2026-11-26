@@ -10,7 +10,6 @@ from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from tutor.routers.common import LanguageLevelIn
-from tutor.routers.conversations import TutorMessageOut
 
 router = APIRouter(prefix="/words", tags=["words"])
 
@@ -30,13 +29,20 @@ class WordFeatureOut(BaseModel):
     value: str
 
 
+class WordExampleOut(BaseModel):
+    """An example sentence in the target language, with its translation."""
+
+    text: str
+    translation: str | None = None
+
+
 class WordOut(BaseModel):
     """The best match for a lookup, in the target language."""
 
     headword: str = Field(description="The word as the learner should write it")
     part_of_speech: str
     features: list[WordFeatureOut]
-    example: TutorMessageOut | None = Field(
+    example: WordExampleOut | None = Field(
         default=None, description="An example sentence and its translation"
     )
 

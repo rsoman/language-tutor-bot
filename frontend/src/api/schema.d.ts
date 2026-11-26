@@ -163,43 +163,6 @@ export interface components {
              */
             scenario_id?: string | null;
         };
-        /** ConversationOut */
-        ConversationOut: {
-            /** Id */
-            id: string;
-            opening: components["schemas"]["TutorMessageOut"];
-        };
-        /**
-         * FeedbackOut
-         * @description One feedback card on a learner message (D0001, D0002).
-         *
-         *     Which fields are set depends on the kind: an unclear word only has an explanation
-         *     (the tutor's question); the others have original, replacement and corrected_sentence.
-         */
-        FeedbackOut: {
-            /**
-             * Kind
-             * @enum {string}
-             */
-            kind: "grammar_error" | "new_word" | "known_word" | "unclear_word";
-            /**
-             * Original
-             * @description What the learner wrote
-             */
-            original?: string | null;
-            /**
-             * Replacement
-             * @description What it should be
-             */
-            replacement?: string | null;
-            /** Explanation */
-            explanation?: string | null;
-            /**
-             * Corrected Sentence
-             * @description The whole corrected sentence; joining the texts gives it
-             */
-            corrected_sentence?: components["schemas"]["SegmentOut"][] | null;
-        };
         /**
          * GrammarTopicOut
          * @description One grammar topic and the learner's progress on it.
@@ -302,39 +265,10 @@ export interface components {
             /** Total */
             total: number;
         };
-        /**
-         * SegmentOut
-         * @description A piece of the corrected sentence. Changed pieces are shown in bold (D0001).
-         */
-        SegmentOut: {
-            /** Text */
-            text: string;
-            /** Changed */
-            changed: boolean;
-        };
         /** TurnIn */
         TurnIn: {
             /** Message */
             message: string;
-        };
-        /** TurnOut */
-        TurnOut: {
-            /** Feedback */
-            feedback: components["schemas"]["FeedbackOut"][];
-            reply: components["schemas"]["TutorMessageOut"];
-        };
-        /**
-         * TutorMessageOut
-         * @description Something the tutor says, in the target language, with an optional translation.
-         */
-        TutorMessageOut: {
-            /** Text */
-            text: string;
-            /**
-             * Translation
-             * @description The same message in the learner's own language
-             */
-            translation?: string | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -348,6 +282,16 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /**
+         * WordExampleOut
+         * @description An example sentence in the target language, with its translation.
+         */
+        WordExampleOut: {
+            /** Text */
+            text: string;
+            /** Translation */
+            translation?: string | null;
         };
         /**
          * WordFeatureOut
@@ -374,7 +318,7 @@ export interface components {
             /** Features */
             features: components["schemas"]["WordFeatureOut"][];
             /** @description An example sentence and its translation */
-            example?: components["schemas"]["TutorMessageOut"] | null;
+            example?: components["schemas"]["WordExampleOut"] | null;
         };
     };
     responses: never;
@@ -444,7 +388,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConversationOut"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -479,7 +423,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TurnOut"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

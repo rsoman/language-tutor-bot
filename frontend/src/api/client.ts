@@ -1,16 +1,16 @@
 // A small typed wrapper around fetch() for the backend API.
 // The types come from schema.d.ts, which is generated from the backend's OpenAPI schema
 // (run `bash scripts/export-openapi.sh`). Never edit schema.d.ts by hand.
+// Exception: the tutor's output types are hand-written in tutorTypes.ts until the owner's
+// backend models exist.
 import type { components } from './schema'
+import type { Conversation, Turn } from './tutorTypes'
+
+export type { Conversation, Feedback, Segment, TutorMessage, Turn } from './tutorTypes'
 
 type Schemas = components['schemas']
 
 export type Language = Schemas['LanguageOut']
-export type Conversation = Schemas['ConversationOut']
-export type TutorMessage = Schemas['TutorMessageOut']
-export type Feedback = Schemas['FeedbackOut']
-export type Segment = Schemas['SegmentOut']
-export type Turn = Schemas['TurnOut']
 export type Word = Schemas['WordOut']
 export type Scenario = Schemas['ScenarioOut']
 export type GrammarTopic = Schemas['GrammarTopicOut']

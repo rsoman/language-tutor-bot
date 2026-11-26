@@ -60,8 +60,7 @@ def test_turn_is_not_implemented_yet(client: TestClient) -> None:
     assert resp.status_code == 501
 
 
-def test_openapi_lists_the_conversation_models(client: TestClient) -> None:
+def test_openapi_lists_the_request_models(client: TestClient) -> None:
+    # The response models are the tutor's LLM output, written by the owner (spec 003).
     schemas = client.get("/openapi.json").json()["components"]["schemas"]
-    assert {"ConversationOut", "TurnOut", "FeedbackOut"} <= set(schemas)
-    kinds = schemas["FeedbackOut"]["properties"]["kind"]["enum"]
-    assert sorted(kinds) == ["grammar_error", "known_word", "new_word", "unclear_word"]
+    assert {"ConversationIn", "TurnIn"} <= set(schemas)
