@@ -32,15 +32,42 @@ export const SAMPLESE: FakeLanguage = {
   levels: ['S1'],
 }
 
+export type FakeTutorMessage = { text: string; translation: string | null }
+
+export type FakeSegment = { text: string; changed: boolean }
+
+export type FakeFeedback = {
+  kind: 'grammar_error' | 'new_word' | 'known_word' | 'unclear_word'
+  original: string | null
+  replacement: string | null
+  explanation: string | null
+  corrected_sentence: FakeSegment[] | null
+}
+
 export type FakeApi = {
   languages: FakeLanguage[]
   /** How many of the next /api/languages requests should fail with a 500. */
   failuresLeft: number
+  /** What POST /api/conversations answers with. */
+  opening: FakeTutorMessage
+  /** What the next POST /api/conversations/{id}/turns answers with. */
+  reply: FakeTutorMessage
+  feedback: FakeFeedback[]
+  /** How many of the next turn requests should fail with a 500. */
+  turnFailuresLeft: number
 }
 
 export const test = base.extend<{ fakeApi: FakeApi }>({
   fakeApi: async ({ page }, use) => {
-    const api: FakeApi = { languages: [EXAMPLISH, SAMPLESE], failuresLeft: 0 }
+    const api: FakeApi = {
+      languages: [EXAMPLISH, SAMPLESE],
+      failuresLeft: 0,
+      opening: { text: 'Default opening', translation: null },
+      reply: { text: 'Default reply', translation: null },
+      feedback: [],
+      turnFailuresLeft: 0,
+    }
+    let conversationCount = 0
     await page.route('**/api/languages', async (route) => {
       if (api.failuresLeft > 0) {
         api.failuresLeft -= 1
@@ -48,6 +75,21 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         return
       }
       await route.fulfill({ json: api.languages })
+    })
+    await page.route('**/api/conversations', async (route) => {
+      conversationCount += 1
+      await route.fulfill({
+        status: 201,
+        json: { id: `c-${conversationCount}`, opening: api.opening },
+      })
+    })
+    await page.route('**/api/conversations/*/turns', async (route) => {
+      if (api.turnFailuresLeft > 0) {
+        api.turnFailuresLeft -= 1
+        await route.fulfill({ status: 500, body: 'fake failure' })
+        return
+      }
+      await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })
     })
     await use(api)
   },
