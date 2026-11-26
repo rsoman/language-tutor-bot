@@ -123,9 +123,9 @@ Feature: Word help
 
 Backend criteria (pytest, `backend/tests/test_words.py`):
 
-- [ ] A valid lookup answers 501.
-- [ ] An unsupported language, a level outside the language, an empty query, or a query over 60 characters answers 422.
-- [ ] The OpenAPI schema lists `WordOut` with `features` as a list of `{name, value}`.
+- [x] A valid lookup answers 501.
+- [x] An unsupported language, a level outside the language, an empty query, or a query over 60 characters answers 422.
+- [x] The OpenAPI schema lists `WordOut` with `features` as a list of `{name, value}`.
 
 Component tests (Vitest): the "Looking up…" state; the failure state with "Try again"; a word with
 no features and no example shows only the headword and part of speech; inserting into an empty box
@@ -133,8 +133,8 @@ adds no leading space; the lightbulb's `aria-expanded`.
 
 Other criteria:
 
-- [ ] All frontend and backend checks pass; axe finds no violations with word help open, with a result, at all three breakpoints.
-- [ ] No real language in frontend code or tests.
+- [x] All frontend and backend checks pass; axe finds no violations with word help open, with a result, at all three breakpoints.
+- [x] No real language in frontend code or tests.
 
 ## Decisions
 

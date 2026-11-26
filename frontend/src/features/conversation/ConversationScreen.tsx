@@ -41,7 +41,12 @@ export function ConversationScreen() {
         tutorTyping={tutorTyping}
         onResend={resend}
       />
-      <Composer onSend={send} disabled={state.status !== 'ready' || tutorTyping} />
+      <Composer
+        onSend={send}
+        disabled={state.status !== 'ready' || tutorTyping}
+        languageCode={code}
+        level={level}
+      />
     </div>
   )
 }

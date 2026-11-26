@@ -5,32 +5,20 @@ their input and then answer 501. The conversation logic itself (prompts, LLM cal
 what feedback to give) is hand-written by the owner and replaces the 501s.
 """
 
-from typing import Literal, Self
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
-from tutor.languages import LANGUAGES
+from tutor.routers.common import LanguageLevelIn
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 NOT_WRITTEN_YET = "Conversation logic is not written yet"
 
 
-class ConversationIn(BaseModel):
+class ConversationIn(LanguageLevelIn):
     """Starts a conversation in one language at one of its levels."""
-
-    language: str = Field(description="Language code from GET /languages, e.g. 'xx'")
-    level: str = Field(description="One of that language's levels")
-
-    @model_validator(mode="after")
-    def check_language_and_level(self) -> Self:
-        profile = LANGUAGES.get(self.language)
-        if profile is None:
-            raise ValueError(f"Unsupported language {self.language!r}")
-        if self.level not in profile.levels:
-            raise ValueError(f"Level {self.level!r} is not offered for {self.language!r}")
-        return self
 
 
 class TutorMessageOut(BaseModel):

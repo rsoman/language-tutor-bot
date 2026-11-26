@@ -139,6 +139,73 @@
           }
         }
       }
+    },
+    "/words/lookup": {
+      "get": {
+        "tags": [
+          "words"
+        ],
+        "summary": "Lookup Word",
+        "description": "Looks up one word. 404 when nothing matches (once the logic exists).",
+        "operationId": "lookup_word_words_lookup_get",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Language code from GET /languages, e.g. 'xx'",
+              "title": "Language"
+            },
+            "description": "Language code from GET /languages, e.g. 'xx'"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "One of that language's levels",
+              "title": "Level"
+            },
+            "description": "One of that language's levels"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "title": "Query"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WordOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -437,6 +504,64 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WordFeatureOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "value"
+        ],
+        "title": "WordFeatureOut",
+        "description": "One grammatical feature the language's profile declares, e.g. a plural (D0003)."
+      },
+      "WordOut": {
+        "properties": {
+          "headword": {
+            "type": "string",
+            "title": "Headword",
+            "description": "The word as the learner should write it"
+          },
+          "part_of_speech": {
+            "type": "string",
+            "title": "Part Of Speech"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/WordFeatureOut"
+            },
+            "type": "array",
+            "title": "Features"
+          },
+          "example": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TutorMessageOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "An example sentence and its translation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "headword",
+          "part_of_speech",
+          "features"
+        ],
+        "title": "WordOut",
+        "description": "The best match for a lookup, in the target language."
       }
     }
   }

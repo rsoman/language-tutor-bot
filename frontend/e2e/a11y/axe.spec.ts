@@ -106,3 +106,36 @@ for (const screen of screens) {
     expect(results.violations).toEqual([])
   })
 }
+
+for (const screen of screens) {
+  test(`word help with a result has no axe violations on ${screen.name}`, async ({ page }) => {
+    await page.route('**/api/languages', (route) => route.fulfill({ json: fakeLanguages }))
+    await page.route('**/api/conversations', (route) =>
+      route.fulfill({
+        status: 201,
+        json: { id: 'c-1', opening: { text: 'Opening', translation: null } },
+      }),
+    )
+    await page.route('**/api/words/lookup?*', (route) =>
+      route.fulfill({
+        json: {
+          headword: 'the-word',
+          part_of_speech: 'noun',
+          features: [{ name: 'plural', value: 'the-words' }],
+          example: { text: 'Example.', translation: 'Translation.' },
+        },
+      }),
+    )
+    await page.setViewportSize({ width: screen.width, height: screen.height })
+    await page.addInitScript(() =>
+      localStorage.setItem('vaikhari.languageChoice', JSON.stringify({ code: 'qaa', level: 'L1' })),
+    )
+    await page.goto('/conversation')
+    await page.getByRole('button', { name: 'Word help', exact: true }).click()
+    await page.getByRole('textbox', { name: 'Word to look up' }).fill('word')
+    await page.getByRole('textbox', { name: 'Word to look up' }).press('Enter')
+    await expect(page.getByText('the-word', { exact: true })).toBeVisible()
+    const results = await new AxeBuilder({ page }).analyze()
+    expect(results.violations).toEqual([])
+  })
+}

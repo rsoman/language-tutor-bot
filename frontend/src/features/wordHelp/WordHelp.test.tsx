@@ -12,7 +12,7 @@ function renderWordHelp(onInsert = vi.fn()) {
 
 async function lookUp(word: string) {
   const user = userEvent.setup()
-  await user.click(screen.getByRole('button', { name: 'Word help', exact: true }))
+  await user.click(screen.getByRole('button', { name: 'Word help' }))
   await user.type(screen.getByRole('textbox', { name: 'Word to look up' }), `${word}{Enter}`)
   return user
 }
@@ -21,7 +21,7 @@ describe('WordHelp', () => {
   test('the button says whether the panel is open', async () => {
     const user = userEvent.setup()
     renderWordHelp()
-    const button = screen.getByRole('button', { name: 'Word help', exact: true })
+    const button = screen.getByRole('button', { name: 'Word help' })
     expect(button).toHaveAttribute('aria-expanded', 'false')
     await user.click(button)
     expect(button).toHaveAttribute('aria-expanded', 'true')

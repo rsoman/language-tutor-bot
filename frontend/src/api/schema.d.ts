@@ -78,6 +78,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/words/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup Word
+         * @description Looks up one word. 404 when nothing matches (once the logic exists).
+         */
+        get: operations["lookup_word_words_lookup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -207,6 +227,33 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /**
+         * WordFeatureOut
+         * @description One grammatical feature the language's profile declares, e.g. a plural (D0003).
+         */
+        WordFeatureOut: {
+            /** Name */
+            name: string;
+            /** Value */
+            value: string;
+        };
+        /**
+         * WordOut
+         * @description The best match for a lookup, in the target language.
+         */
+        WordOut: {
+            /**
+             * Headword
+             * @description The word as the learner should write it
+             */
+            headword: string;
+            /** Part Of Speech */
+            part_of_speech: string;
+            /** Features */
+            features: components["schemas"]["WordFeatureOut"][];
+            /** @description An example sentence and its translation */
+            example?: components["schemas"]["TutorMessageOut"] | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -311,6 +358,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TurnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_word_words_lookup_get: {
+        parameters: {
+            query: {
+                /** @description Language code from GET /languages, e.g. 'xx' */
+                language: string;
+                /** @description One of that language's levels */
+                level: string;
+                query: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WordOut"];
                 };
             };
             /** @description Validation Error */
