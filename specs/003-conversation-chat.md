@@ -193,10 +193,10 @@ Feature: Conversation chat
 
 Backend criteria (pytest, `backend/tests/test_conversations.py`; a BDD feature is not needed for a stub):
 
-- [ ] `POST /conversations` with a supported language and level answers 501.
-- [ ] `POST /conversations` with an unsupported language, or a level outside that language's levels, answers 422.
-- [ ] `POST /conversations/{id}/turns` with an empty message, or one over 500 characters, answers 422; a valid one answers 501.
-- [ ] The OpenAPI schema lists `ConversationOut`, `TurnOut` and `FeedbackOut` with the four kinds.
+- [x] `POST /conversations` with a supported language and level answers 501.
+- [x] `POST /conversations` with an unsupported language, or a level outside that language's levels, answers 422.
+- [x] `POST /conversations/{id}/turns` with an empty message, or one over 500 characters, answers 422; a valid one answers 501.
+- [x] The OpenAPI schema lists `ConversationOut`, `TurnOut` and `FeedbackOut` with the four kinds.
 
 Component tests (Vitest) cover: each card kind's heading and colour class; the corrected sentence
 renders changed segments in `<strong>`; Enter sends and Shift+Enter does not; the 500-character
@@ -204,9 +204,9 @@ limit; the "Tutor is typing" indicator; the start error with "Try again".
 
 Other criteria:
 
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm e2e`, and the backend's ruff, pyright and pytest pass.
-- [ ] No real language in frontend code or tests (guard test from spec 002 still passes).
-- [ ] axe finds no violations in Conversation with messages and all four card kinds, at all three breakpoints.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm e2e`, and the backend's ruff, pyright and pytest pass.
+- [x] No real language in frontend code or tests (guard test from spec 002 still passes).
+- [x] axe finds no violations in Conversation with messages and all four card kinds, at all three breakpoints.
 
 ## Decisions
 
