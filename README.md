@@ -19,6 +19,7 @@ Phase 0 (foundations). Roadmap: 0 Foundations, 1 Orchestration, 2 RAG,
 backend/     FastAPI app (Python, uv)
 specs/       One spec per feature, the input to the Claude Code harness
 docs/adr/    Architecture decision records
+docs/learning/  Primer and cheat sheet: Python, FastAPI and testing for a JS/TS developer
 CLAUDE.md    Rules Claude Code follows in this repo
 ```
 
