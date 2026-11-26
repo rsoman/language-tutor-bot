@@ -20,6 +20,10 @@ NOT_WRITTEN_YET = "Conversation logic is not written yet"
 class ConversationIn(LanguageLevelIn):
     """Starts a conversation in one language at one of its levels."""
 
+    scenario_id: str | None = Field(
+        default=None, description="A scenario id from GET /scenarios; none for free conversation"
+    )
+
 
 class TutorMessageOut(BaseModel):
     """Something the tutor says, in the target language, with an optional translation."""

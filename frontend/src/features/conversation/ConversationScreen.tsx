@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import { useLanguageChoice } from '../language/LanguageChoiceContext'
+import { ScenarioChip } from '../scenarios/ScenarioChip'
 import { Composer } from './Composer'
 import { useConversation } from './ConversationContext'
 import styles from './ConversationScreen.module.css'
@@ -26,6 +27,7 @@ export function ConversationScreen() {
 
   return (
     <div className={styles.screen}>
+      <ScenarioChip />
       {state.status === 'starting' && <p className={styles.status}>Starting a conversation…</p>}
       {state.status === 'failed' && (
         <div className={styles.status}>

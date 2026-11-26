@@ -12,6 +12,7 @@ export type Feedback = Schemas['FeedbackOut']
 export type Segment = Schemas['SegmentOut']
 export type Turn = Schemas['TurnOut']
 export type Word = Schemas['WordOut']
+export type Scenario = Schemas['ScenarioOut']
 
 /** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
 export class ApiError extends Error {
@@ -52,8 +53,12 @@ export function fetchLanguages(): Promise<Language[]> {
   return getJson<Language[]>('/languages')
 }
 
-export function startConversation(language: string, level: string): Promise<Conversation> {
-  return postJson<Conversation>('/conversations', { language, level })
+export function startConversation(
+  language: string,
+  level: string,
+  scenarioId: string | null = null,
+): Promise<Conversation> {
+  return postJson<Conversation>('/conversations', { language, level, scenario_id: scenarioId })
 }
 
 export function sendTurn(conversationId: string, message: string): Promise<Turn> {
@@ -63,4 +68,9 @@ export function sendTurn(conversationId: string, message: string): Promise<Turn>
 export function lookupWord(language: string, level: string, query: string): Promise<Word> {
   const params = new URLSearchParams({ language, level, query })
   return getJson<Word>(`/words/lookup?${params.toString()}`)
+}
+
+export function fetchScenarios(language: string, level: string): Promise<Scenario[]> {
+  const params = new URLSearchParams({ language, level })
+  return getJson<Scenario[]>(`/scenarios?${params.toString()}`)
 }

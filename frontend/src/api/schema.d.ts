@@ -98,6 +98,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/scenarios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Scenarios
+         * @description Scenarios at the learner's level, plus stretch scenarios at another level.
+         */
+        get: operations["list_scenarios_scenarios_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -117,6 +137,11 @@ export interface components {
              * @description One of that language's levels
              */
             level: string;
+            /**
+             * Scenario Id
+             * @description A scenario id from GET /scenarios; none for free conversation
+             */
+            scenario_id?: string | null;
         };
         /** ConversationOut */
         ConversationOut: {
@@ -179,6 +204,43 @@ export interface components {
             level_system: string;
             /** Levels */
             levels: string[];
+        };
+        /**
+         * ScenarioOut
+         * @description One scenario. The client groups the flat list into sections.
+         */
+        ScenarioOut: {
+            /** Id */
+            id: string;
+            /**
+             * Title
+             * @description Title in the learner's own language
+             */
+            title: string;
+            /**
+             * Native Title
+             * @description Title in the target language
+             */
+            native_title: string;
+            /**
+             * Topics
+             * @description What the scenario practises, one short line
+             */
+            topics: string;
+            /**
+             * Level
+             * @description One of the language's levels
+             */
+            level: string;
+            /** Recommended */
+            recommended: boolean;
+            /** Done */
+            done: boolean;
+            /**
+             * Last Result
+             * @description e.g. 'Last time: 2 corrections'
+             */
+            last_result?: string | null;
         };
         /**
          * SegmentOut
@@ -393,6 +455,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WordOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_scenarios_scenarios_get: {
+        parameters: {
+            query: {
+                /** @description Language code from GET /languages, e.g. 'xx' */
+                language: string;
+                /** @description One of that language's levels */
+                level: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScenarioOut"][];
                 };
             };
             /** @description Validation Error */

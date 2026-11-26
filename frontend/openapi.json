@@ -206,6 +206,66 @@
           }
         }
       }
+    },
+    "/scenarios": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "List Scenarios",
+        "description": "Scenarios at the learner's level, plus stretch scenarios at another level.",
+        "operationId": "list_scenarios_scenarios_get",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Language code from GET /languages, e.g. 'xx'",
+              "title": "Language"
+            },
+            "description": "Language code from GET /languages, e.g. 'xx'"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "One of that language's levels",
+              "title": "Level"
+            },
+            "description": "One of that language's levels"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScenarioOut"
+                  },
+                  "title": "Response List Scenarios Scenarios Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -221,6 +281,18 @@
             "type": "string",
             "title": "Level",
             "description": "One of that language's levels"
+          },
+          "scenario_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenario Id",
+            "description": "A scenario id from GET /scenarios; none for free conversation"
           }
         },
         "type": "object",
@@ -384,6 +456,66 @@
           "levels"
         ],
         "title": "LanguageOut"
+      },
+      "ScenarioOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Title in the learner's own language"
+          },
+          "native_title": {
+            "type": "string",
+            "title": "Native Title",
+            "description": "Title in the target language"
+          },
+          "topics": {
+            "type": "string",
+            "title": "Topics",
+            "description": "What the scenario practises, one short line"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "One of the language's levels"
+          },
+          "recommended": {
+            "type": "boolean",
+            "title": "Recommended"
+          },
+          "done": {
+            "type": "boolean",
+            "title": "Done"
+          },
+          "last_result": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Result",
+            "description": "e.g. 'Last time: 2 corrections'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "native_title",
+          "topics",
+          "level",
+          "recommended",
+          "done"
+        ],
+        "title": "ScenarioOut",
+        "description": "One scenario. The client groups the flat list into sections."
       },
       "SegmentOut": {
         "properties": {

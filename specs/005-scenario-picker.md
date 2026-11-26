@@ -135,17 +135,17 @@ Feature: Scenario picker
 
 Backend criteria (pytest, `backend/tests/test_scenarios.py`):
 
-- [ ] `GET /scenarios` with a supported language and level answers 501; unsupported language or level answers 422.
-- [ ] `POST /conversations` accepts an optional `scenario_id` (still 501).
-- [ ] The OpenAPI schema lists `ScenarioOut`.
+- [x] `GET /scenarios` with a supported language and level answers 501; unsupported language or level answers 422.
+- [x] `POST /conversations` accepts an optional `scenario_id` (still 501).
+- [x] The OpenAPI schema lists `ScenarioOut`.
 
 Component tests (Vitest): loading and failure states; the stretch section is left out with no other-level
 scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes.
 
 Other criteria:
 
-- [ ] All checks pass; axe finds no violations on the scenario page at all three breakpoints.
-- [ ] No real language or level system in frontend code or tests.
+- [x] All checks pass; axe finds no violations on the scenario page at all three breakpoints.
+- [x] No real language or level system in frontend code or tests.
 
 ## Decisions
 
