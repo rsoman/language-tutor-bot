@@ -121,7 +121,9 @@ Then('the page title is {string}', async ({ page }, title: string) => {
 })
 
 Then('the address ends with {string}', async ({ page }, path: string) => {
-  await expect(page).toHaveURL(new RegExp(`${path}$`))
+  // Escape the path, so a query string's "?" is matched literally.
+  const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  await expect(page).toHaveURL(new RegExp(`${escaped}$`))
 })
 
 Then('the page shows the heading {string}', async ({ page }, heading: string) => {
