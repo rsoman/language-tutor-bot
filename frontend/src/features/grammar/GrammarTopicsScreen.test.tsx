@@ -71,6 +71,7 @@ describe('GrammarTopicsScreen', () => {
     openGrammar('/grammar/topics/g-1/lesson')
     expect(await screen.findByRole('heading', { name: 'Lesson' })).toBeInTheDocument()
     expect(screen.getByText('This part is not built yet.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Grammar$/ })).toHaveAttribute('href', '/grammar')
+    const main = screen.getByRole('main')
+    expect(within(main).getByRole('link', { name: 'Grammar' })).toHaveAttribute('href', '/grammar')
   })
 })

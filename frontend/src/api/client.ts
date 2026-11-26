@@ -13,6 +13,7 @@ export type Segment = Schemas['SegmentOut']
 export type Turn = Schemas['TurnOut']
 export type Word = Schemas['WordOut']
 export type Scenario = Schemas['ScenarioOut']
+export type GrammarTopic = Schemas['GrammarTopicOut']
 
 /** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
 export class ApiError extends Error {
@@ -73,4 +74,9 @@ export function lookupWord(language: string, level: string, query: string): Prom
 export function fetchScenarios(language: string, level: string): Promise<Scenario[]> {
   const params = new URLSearchParams({ language, level })
   return getJson<Scenario[]>(`/scenarios?${params.toString()}`)
+}
+
+export function fetchGrammarTopics(language: string, level: string): Promise<GrammarTopic[]> {
+  const params = new URLSearchParams({ language, level })
+  return getJson<GrammarTopic[]>(`/grammar/topics?${params.toString()}`)
 }

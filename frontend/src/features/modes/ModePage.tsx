@@ -2,6 +2,7 @@ import { useEffect, type ComponentType } from 'react'
 
 import { appName } from '../../config'
 import { ConversationScreen } from '../conversation/ConversationScreen'
+import { GrammarTopicsScreen } from '../grammar/GrammarTopicsScreen'
 import { LanguagePrompt } from '../language/LanguagePrompt'
 import { useLanguageChoice } from '../language/LanguageChoiceContext'
 import styles from './ModePage.module.css'
@@ -10,6 +11,7 @@ import type { Mode, ModeIcon } from './modes'
 /** Modes that are built so far. The others show their placeholder. */
 const screens: Partial<Record<ModeIcon, ComponentType>> = {
   conversation: ConversationScreen,
+  grammar: GrammarTopicsScreen,
 }
 
 type ModePageProps = {

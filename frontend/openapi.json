@@ -266,6 +266,66 @@
           }
         }
       }
+    },
+    "/grammar/topics": {
+      "get": {
+        "tags": [
+          "grammar"
+        ],
+        "summary": "List Topics",
+        "description": "The grammar topics of one level, in teaching order.",
+        "operationId": "list_topics_grammar_topics_get",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Language code from GET /languages, e.g. 'xx'",
+              "title": "Language"
+            },
+            "description": "Language code from GET /languages, e.g. 'xx'"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "One of that language's levels",
+              "title": "Level"
+            },
+            "description": "One of that language's levels"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GrammarTopicOut"
+                  },
+                  "title": "Response List Topics Grammar Topics Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -389,6 +449,56 @@
         ],
         "title": "FeedbackOut",
         "description": "One feedback card on a learner message (D0001, D0002).\n\nWhich fields are set depends on the kind: an unclear word only has an explanation\n(the tutor's question); the others have original, replacement and corrected_sentence."
+      },
+      "GrammarTopicOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Topic name in the learner's own language"
+          },
+          "example": {
+            "type": "string",
+            "title": "Example",
+            "description": "A short example in the target language"
+          },
+          "times_learned": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Times Learned",
+            "description": "How often the learner took the lesson"
+          },
+          "best_score": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Best test result; null until the first test"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed",
+            "description": "Whether the best score reaches the pass mark"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "example",
+          "times_learned",
+          "passed"
+        ],
+        "title": "GrammarTopicOut",
+        "description": "One grammar topic and the learner's progress on it."
       },
       "HTTPValidationError": {
         "properties": {
@@ -516,6 +626,27 @@
         ],
         "title": "ScenarioOut",
         "description": "One scenario. The client groups the flat list into sections."
+      },
+      "ScoreOut": {
+        "properties": {
+          "correct": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Correct"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "correct",
+          "total"
+        ],
+        "title": "ScoreOut",
+        "description": "A test result, e.g. 8 of 10 correct."
       },
       "SegmentOut": {
         "properties": {

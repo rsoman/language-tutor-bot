@@ -143,8 +143,8 @@ Feature: Grammar topics
 
 Backend criteria (pytest, `backend/tests/test_grammar.py`):
 
-- [ ] `GET /grammar/topics` with a supported language and level answers 501; an unsupported language or level answers 422.
-- [ ] The OpenAPI schema lists `GrammarTopicOut` with `best_score` nullable.
+- [x] `GET /grammar/topics` with a supported language and level answers 501; an unsupported language or level answers 422.
+- [x] The OpenAPI schema lists `GrammarTopicOut` with `best_score` nullable.
 
 Component tests (Vitest): loading and failure states; the three progress-line forms; a topic's
 example carries `lang`; "Start test · 2 topics" (plural); ticks are cleared when the level changes;
@@ -152,8 +152,8 @@ the not-built-yet placeholder for a lesson link.
 
 Other criteria:
 
-- [ ] All checks pass; axe finds no violations on Grammar with topics, at all three breakpoints.
-- [ ] No real language in frontend code or tests.
+- [x] All checks pass; axe finds no violations on Grammar with topics, at all three breakpoints.
+- [x] No real language in frontend code or tests.
 
 ## Decisions
 

@@ -118,6 +118,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/grammar/topics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Topics
+         * @description The grammar topics of one level, in teaching order.
+         */
+        get: operations["list_topics_grammar_topics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -180,6 +200,36 @@ export interface components {
              */
             corrected_sentence?: components["schemas"]["SegmentOut"][] | null;
         };
+        /**
+         * GrammarTopicOut
+         * @description One grammar topic and the learner's progress on it.
+         */
+        GrammarTopicOut: {
+            /** Id */
+            id: string;
+            /**
+             * Title
+             * @description Topic name in the learner's own language
+             */
+            title: string;
+            /**
+             * Example
+             * @description A short example in the target language
+             */
+            example: string;
+            /**
+             * Times Learned
+             * @description How often the learner took the lesson
+             */
+            times_learned: number;
+            /** @description Best test result; null until the first test */
+            best_score?: components["schemas"]["ScoreOut"] | null;
+            /**
+             * Passed
+             * @description Whether the best score reaches the pass mark
+             */
+            passed: boolean;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -241,6 +291,16 @@ export interface components {
              * @description e.g. 'Last time: 2 corrections'
              */
             last_result?: string | null;
+        };
+        /**
+         * ScoreOut
+         * @description A test result, e.g. 8 of 10 correct.
+         */
+        ScoreOut: {
+            /** Correct */
+            correct: number;
+            /** Total */
+            total: number;
         };
         /**
          * SegmentOut
@@ -489,6 +549,40 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ScenarioOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_topics_grammar_topics_get: {
+        parameters: {
+            query: {
+                /** @description Language code from GET /languages, e.g. 'xx' */
+                language: string;
+                /** @description One of that language's levels */
+                level: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrammarTopicOut"][];
                 };
             };
             /** @description Validation Error */
