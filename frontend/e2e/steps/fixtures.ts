@@ -44,6 +44,13 @@ export type FakeFeedback = {
   corrected_sentence: FakeSegment[] | null
 }
 
+export type FakeWord = {
+  headword: string
+  part_of_speech: string
+  features: { name: string; value: string }[]
+  example: FakeTutorMessage | null
+}
+
 export type FakeApi = {
   languages: FakeLanguage[]
   /** How many of the next /api/languages requests should fail with a 500. */
@@ -55,6 +62,8 @@ export type FakeApi = {
   feedback: FakeFeedback[]
   /** How many of the next turn requests should fail with a 500. */
   turnFailuresLeft: number
+  /** Word lookups: query -> word. Anything else answers 404. */
+  dictionary: Record<string, FakeWord>
 }
 
 export const test = base.extend<{ fakeApi: FakeApi }>({
@@ -69,6 +78,7 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         reply: { text: 'Default reply', translation: null },
         feedback: [],
         turnFailuresLeft: 0,
+        dictionary: {},
       }
       let conversationCount = 0
       await page.route('**/api/languages', async (route) => {
@@ -93,6 +103,15 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
           return
         }
         await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })
+      })
+      await page.route('**/api/words/lookup?*', async (route) => {
+        const query = new URL(route.request().url()).searchParams.get('query') ?? ''
+        const word = api.dictionary[query]
+        if (word) {
+          await route.fulfill({ json: word })
+        } else {
+          await route.fulfill({ status: 404, json: { detail: 'No match' } })
+        }
       })
       await use(api)
     },
