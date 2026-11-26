@@ -68,9 +68,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConversationOut"
-                }
+                "schema": {}
               }
             }
           },
@@ -121,9 +119,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TurnOut"
-                }
+                "schema": {}
               }
             }
           },
@@ -163,93 +159,6 @@
         ],
         "title": "ConversationIn",
         "description": "Starts a conversation in one language at one of its levels."
-      },
-      "ConversationOut": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "opening": {
-            "$ref": "#/components/schemas/TutorMessageOut"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "opening"
-        ],
-        "title": "ConversationOut"
-      },
-      "FeedbackOut": {
-        "properties": {
-          "kind": {
-            "type": "string",
-            "enum": [
-              "grammar_error",
-              "new_word",
-              "known_word",
-              "unclear_word"
-            ],
-            "title": "Kind"
-          },
-          "original": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Original",
-            "description": "What the learner wrote"
-          },
-          "replacement": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Replacement",
-            "description": "What it should be"
-          },
-          "explanation": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Explanation"
-          },
-          "corrected_sentence": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/SegmentOut"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Corrected Sentence",
-            "description": "The whole corrected sentence; joining the texts gives it"
-          }
-        },
-        "type": "object",
-        "required": [
-          "kind"
-        ],
-        "title": "FeedbackOut",
-        "description": "One feedback card on a learner message (D0001, D0002).\n\nWhich fields are set depends on the kind: an unclear word only has an explanation\n(the tutor's question); the others have original, replacement and corrected_sentence."
       },
       "HTTPValidationError": {
         "properties": {
@@ -318,25 +227,6 @@
         ],
         "title": "LanguageOut"
       },
-      "SegmentOut": {
-        "properties": {
-          "text": {
-            "type": "string",
-            "title": "Text"
-          },
-          "changed": {
-            "type": "boolean",
-            "title": "Changed"
-          }
-        },
-        "type": "object",
-        "required": [
-          "text",
-          "changed"
-        ],
-        "title": "SegmentOut",
-        "description": "A piece of the corrected sentence. Changed pieces are shown in bold (D0001)."
-      },
       "TurnIn": {
         "properties": {
           "message": {
@@ -351,52 +241,6 @@
           "message"
         ],
         "title": "TurnIn"
-      },
-      "TurnOut": {
-        "properties": {
-          "feedback": {
-            "items": {
-              "$ref": "#/components/schemas/FeedbackOut"
-            },
-            "type": "array",
-            "title": "Feedback"
-          },
-          "reply": {
-            "$ref": "#/components/schemas/TutorMessageOut"
-          }
-        },
-        "type": "object",
-        "required": [
-          "feedback",
-          "reply"
-        ],
-        "title": "TurnOut"
-      },
-      "TutorMessageOut": {
-        "properties": {
-          "text": {
-            "type": "string",
-            "title": "Text"
-          },
-          "translation": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Translation",
-            "description": "The same message in the learner's own language"
-          }
-        },
-        "type": "object",
-        "required": [
-          "text"
-        ],
-        "title": "TutorMessageOut",
-        "description": "Something the tutor says, in the target language, with an optional translation."
       },
       "ValidationError": {
         "properties": {
