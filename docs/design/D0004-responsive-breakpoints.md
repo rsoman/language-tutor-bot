@@ -1,6 +1,6 @@
 # D0004: One responsive codebase with three breakpoints
 
-- **Status:** proposed
+- **Status:** accepted
 - **Date:** 2026-11-26
 - **Canvas:** https://claude.ai/artifact/CFP8hVHwBhNRCC9CJwppkN (Mobile layouts, Tablet layouts boards)
 - **Supersedes:** none

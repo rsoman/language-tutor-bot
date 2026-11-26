@@ -3,8 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from tests.conftest import SAMPLE_LANGUAGE, SAMPLE_LEVEL
-from tutor.config import load_settings
+from tutor.config import Settings
 
 
 @pytest.fixture(autouse=True)
@@ -15,37 +14,23 @@ def no_dotenv(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
 
 def test_settings_read_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TUTOR_ENVIRONMENT", "prod")
-    settings = load_settings()
-    assert settings.environment == "prod"
-    assert settings.default_language == SAMPLE_LANGUAGE.code
-    assert settings.default_level == SAMPLE_LEVEL
+    assert Settings().environment == "prod"
 
 
 def test_environment_falls_back_to_local(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("TUTOR_ENVIRONMENT", raising=False)
-    assert load_settings().environment == "local"
+    assert Settings().environment == "local"
 
 
 def test_unknown_environment_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("TUTOR_ENVIRONMENT", "staging")
     with pytest.raises(ValidationError):
-        load_settings()
+        Settings()
 
 
-@pytest.mark.parametrize("var", ["TUTOR_DEFAULT_LANGUAGE", "TUTOR_DEFAULT_LEVEL"])
-def test_language_and_level_are_required(monkeypatch: pytest.MonkeyPatch, var: str) -> None:
-    monkeypatch.delenv(var)
-    with pytest.raises(ValidationError):
-        load_settings()
-
-
-def test_unsupported_default_language_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TUTOR_DEFAULT_LANGUAGE", "xx")
-    with pytest.raises(ValidationError, match="Unsupported language"):
-        load_settings()
-
-
-def test_level_outside_the_language_is_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("TUTOR_DEFAULT_LEVEL", "not-a-level")
-    with pytest.raises(ValidationError, match="not-a-level"):
-        load_settings()
+def test_settings_have_no_default_language_or_level() -> None:
+    # The target language and level come from the learner (later: their saved choice),
+    # never from app config. See docs/adr/0001-language-agnostic-core.md.
+    fields = Settings.model_fields
+    assert "default_language" not in fields
+    assert "default_level" not in fields
