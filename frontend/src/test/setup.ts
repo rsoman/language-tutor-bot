@@ -5,7 +5,7 @@ import { cleanup } from '@testing-library/react'
 
 import { server } from './server'
 
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
+beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
 afterEach(() => {
   server.resetHandlers()
   cleanup()

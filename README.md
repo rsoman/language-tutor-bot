@@ -17,12 +17,12 @@ Phase 0 (foundations). Roadmap: 0 Foundations, 1 Orchestration, 2 RAG,
 
 ```
 backend/     FastAPI app (Python, uv)
+frontend/    React + TypeScript + Vite app (pnpm)
 specs/       One spec per feature, the input to the Claude Code harness
 docs/adr/    Architecture decision records
 CLAUDE.md    Rules Claude Code follows in this repo
 ```
 
-A `frontend/` (React + Vite) arrives in Phase 1.
 
 ## Run locally
 
@@ -40,6 +40,19 @@ Checks (the same as CI):
 uv run ruff check . && uv run ruff format --check .
 uv run pyright
 uv run pytest
+```
+
+### Frontend
+
+Requires Node 22 and pnpm. Start the backend first (above), then:
+
+```bash
+cd frontend
+pnpm install
+pnpm dev                                  # http://localhost:5173, /api/* goes to the backend
+pnpm lint && pnpm typecheck && pnpm test  # same as CI
+pnpm exec playwright install chromium     # once
+pnpm e2e                                  # BDD acceptance tests and accessibility checks
 ```
 
 ## Harness workflow

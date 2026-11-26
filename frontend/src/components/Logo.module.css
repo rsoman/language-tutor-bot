@@ -1,0 +1,25 @@
+.logo {
+  flex: none;
+}
+
+.back {
+  fill: var(--color-highlight);
+}
+
+.front {
+  fill: var(--color-primary);
+}
+
+.frontLetter {
+  fill: var(--color-on-primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.backLetter {
+  fill: var(--color-primary);
+  font-family: var(--font-devanagari);
+  font-weight: 700;
+  font-size: 10px;
+}

@@ -10,5 +10,8 @@ Read the root `CLAUDE.md` first. This file adds frontend rules.
 - Colours, spacing and fonts come from `src/styles/tokens.css`. Never hard-code a hex value in a component.
 - Target-language content (words, level names, articles) comes from the API, never from component code.
 - API types are generated (`pnpm gen:api`), never hand-written.
+- After a backend API change, run `bash scripts/export-openapi.sh` and commit `openapi.json` and `src/api/schema.d.ts`.
+- BDD scenarios live in `e2e/features/` (copied word for word from the spec), steps in `e2e/steps/`.
+  Tests use fake languages (`xx`, `yy`), never real ones.
 
-The app itself is created by the first frontend spec. Until then this folder holds only this file.
+The app was created by `specs/002-main-screen-shell.md`.

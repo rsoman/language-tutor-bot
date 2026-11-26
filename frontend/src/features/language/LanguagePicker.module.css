@@ -1,0 +1,137 @@
+.wrapper {
+  position: relative;
+}
+
+.pill {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-3) 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line);
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pill:disabled {
+  cursor: default;
+  color: var(--color-muted);
+}
+
+.pill[aria-expanded='true'] {
+  border-color: var(--color-primary);
+}
+
+.pill[aria-expanded='true'] .chevron {
+  transform: rotate(180deg);
+}
+
+.chevron {
+  color: var(--color-primary);
+}
+
+/* Mobile first: the short label (code), then the full name from tablet up. */
+.long {
+  display: none;
+}
+
+.short {
+  display: inline;
+}
+
+@media (min-width: 640px) {
+  .pill {
+    font-size: 14px;
+  }
+
+  .long {
+    display: inline;
+  }
+
+  .short {
+    display: none;
+  }
+}
+
+.dialog {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 20;
+  width: min(320px, calc(100vw - 2 * var(--space-4)));
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionLabel,
+.levelLabel {
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.hint {
+  margin: -10px 0 var(--space-1) 28px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.levels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+}
+
+input[type='radio'] {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+
+.done {
+  min-height: var(--touch-target);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}

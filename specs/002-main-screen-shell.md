@@ -1,6 +1,6 @@
 # 002: Main screen shell (frontend)
 
-- **Status:** draft
+- **Status:** ready (owner said go ahead 2026-11-26; full review pending)
 - **Owner:** Claude-generated
 - **Phase:** 1
 
@@ -201,11 +201,11 @@ write helpers (bad JSON is ignored), the loading state, and that the logo SVG ha
 
 Other criteria:
 
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e` pass locally and in a new
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e` pass locally and in a new
       `frontend` CI job.
-- [ ] No hex colour outside `src/styles/tokens.css` (checked by a lint rule or a test).
-- [ ] No real language name, code or level system in `frontend/src` or the tests.
-- [ ] Every interactive element is keyboard reachable with a visible focus style; axe finds no
+- [x] No hex colour outside `src/styles/tokens.css` (checked by a lint rule or a test).
+- [x] No real language name, code or level system in `frontend/src` or the tests.
+- [x] Every interactive element is keyboard reachable with a visible focus style; axe finds no
       violations on each mode at all three breakpoints (`@axe-core/playwright`).
 
 ## Decisions
@@ -213,7 +213,7 @@ Other criteria:
 - D0004 responsive breakpoints (accepted): followed as written.
 - `docs/conventions/react.md`: React + TS + Vite, pnpm, React Router, TanStack Query,
   openapi-typescript, ESLint + Prettier, Vitest + Testing Library, Playwright.
-- Proposed here, for the owner to confirm in review:
+- Proposed here, owner said go ahead (2026-11-26), to confirm in review:
   - **Gherkin runner for Playwright: `playwright-bdd`.** It turns `.feature` files into Playwright
     tests, the same shape as pytest-bdd on the backend. This settles the "to be decided" in
     `docs/conventions/testing.md`, which this PR updates.

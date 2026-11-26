@@ -19,7 +19,7 @@ Exempt: pure docs, formatting, dependency bumps and config that has no behaviour
 
 | Layer | What it checks | Backend | Frontend |
 |---|---|---|---|
-| Acceptance (BDD) | The spec's Given/When/Then criteria, through the public API or UI | pytest-bdd: `tests/features/*.feature` + `tests/bdd/test_*_feature.py` | Playwright (Gherkin runner to be decided) |
+| Acceptance (BDD) | The spec's Given/When/Then criteria, through the public API or UI | pytest-bdd: `tests/features/*.feature` + `tests/bdd/test_*_feature.py` | Playwright with playwright-bdd: `frontend/e2e/features/*.feature` + `frontend/e2e/steps/*.ts` |
 | Unit and component | One function, model or component | pytest: `tests/test_*.py` | Vitest + Testing Library |
 
 - Each acceptance criterion in a spec becomes one Gherkin scenario. Keep the wording identical so
@@ -31,7 +31,11 @@ Whether every spec must have BDD scenarios is not enforced yet (decision deferre
 New specs should use Given/When/Then criteria anyway, so converting is cheap.
 
 See `backend/tests/features/health.feature` and `backend/tests/bdd/test_health_feature.py` for
-the reference example.
+the backend reference example, and `frontend/e2e/features/002-main-screen-shell.feature` with
+`frontend/e2e/steps/` for the frontend one (spec 002 chose playwright-bdd, 2026-11-26).
+
+Frontend tests never call the backend: Vitest uses MSW (`src/test/server.ts`), Playwright uses
+`page.route` (`e2e/steps/fixtures.ts`).
 
 ## General rules
 
