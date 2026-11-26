@@ -26,7 +26,9 @@ export default defineConfig({
     { name: 'a11y', testDir: 'e2e/a11y', use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
-    command: `pnpm exec vite --port ${port} --strictPort`,
+    // --host 127.0.0.1: Vite may otherwise listen only on IPv6 (::1) on CI runners,
+    // and the readiness check below would never connect.
+    command: `pnpm exec vite --host 127.0.0.1 --port ${port} --strictPort`,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
   },
