@@ -18,8 +18,23 @@ Endpoints, request/response schemas, error cases.
 
 ## Acceptance criteria
 
-- [ ] Testable statement 1
-- [ ] Testable statement 2
+Write each criterion as a Gherkin scenario. Each one becomes a scenario in
+`backend/tests/features/NNN-name.feature` (or the frontend equivalent), with the same wording.
+
+```gherkin
+Scenario: Short name of the behaviour
+  Given some starting state
+  When the learner or client does something
+  Then this observable result happens
+```
+
+Non-behavioural criteria (lint, types, CI) go here as checkboxes:
+
+- [ ] `ruff`, `pyright` and `pytest` pass in CI.
+
+## Decisions
+
+Links to ADRs (`docs/adr/`) or design records (`docs/design/`) this spec depends on or creates.
 
 ## Notes
 
