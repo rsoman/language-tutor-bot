@@ -3,7 +3,7 @@ import { defineBddConfig } from 'playwright-bdd'
 
 // playwright-bdd turns e2e/features/*.feature into Playwright tests (in .features-gen/),
 // using the step definitions in e2e/steps/. Same idea as pytest-bdd on the backend.
-const testDir = defineBddConfig({
+const bddTestDir = defineBddConfig({
   features: 'e2e/features/*.feature',
   steps: 'e2e/steps/*.ts',
 })
@@ -11,7 +11,6 @@ const testDir = defineBddConfig({
 const port = 4173
 
 export default defineConfig({
-  testDir,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
@@ -20,7 +19,12 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${port}`,
     trace: 'off',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    // The spec's acceptance criteria, generated from the .feature files.
+    { name: 'bdd', testDir: bddTestDir, use: { ...devices['Desktop Chrome'] } },
+    // Plain Playwright tests for non-behavioural criteria such as accessibility.
+    { name: 'a11y', testDir: 'e2e/a11y', use: { ...devices['Desktop Chrome'] } },
+  ],
   webServer: {
     command: `pnpm exec vite --port ${port} --strictPort`,
     url: `http://127.0.0.1:${port}`,
