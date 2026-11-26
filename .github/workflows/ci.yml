@@ -27,3 +27,31 @@ jobs:
         run: uv run pyright
       - name: Test
         run: uv run pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Type check
+        run: pnpm typecheck
+      - name: Unit and component tests
+        run: pnpm test
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Acceptance tests (Playwright BDD)
+        run: pnpm e2e

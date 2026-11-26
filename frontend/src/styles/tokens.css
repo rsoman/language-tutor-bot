@@ -1,0 +1,43 @@
+/*
+ * Design tokens from the design canvas (fig palette, Palette board).
+ * This is the only file allowed to contain hex colours. Components use var(--...).
+ */
+:root {
+  /* Colours */
+  --color-ground: #f6eee3;
+  --color-surface: #fffaf3;
+  --color-ink: #2b1226;
+  --color-primary: #5b2a4e;
+  --color-accent: #a8323f;
+  --color-good: #4f6126;
+  --color-highlight: #e2a94b;
+  --color-highlight-soft: #f6ddb0;
+  --color-muted: #6b5163;
+  --color-line: #e6d8c8;
+  --color-on-primary: #fffaf3;
+
+  /* Fonts */
+  --font-heading: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-devanagari: 'Noto Sans Devanagari', sans-serif;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --content-max-width: 760px;
+  --header-height-desktop: 72px;
+  --header-height-mobile: 56px;
+  --touch-target: 44px;
+}
