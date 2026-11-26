@@ -51,6 +51,17 @@ export type FakeWord = {
   example: FakeTutorMessage | null
 }
 
+export type FakeScenario = {
+  id: string
+  title: string
+  native_title: string
+  topics: string
+  level: string
+  recommended: boolean
+  done: boolean
+  last_result: string | null
+}
+
 export type FakeApi = {
   languages: FakeLanguage[]
   /** How many of the next /api/languages requests should fail with a 500. */
@@ -64,6 +75,9 @@ export type FakeApi = {
   turnFailuresLeft: number
   /** Word lookups: query -> word. Anything else answers 404. */
   dictionary: Record<string, FakeWord>
+  scenarios: FakeScenario[]
+  /** The scenario_id of every POST /api/conversations, in order (null for none). */
+  conversationScenarios: (string | null)[]
 }
 
 export const test = base.extend<{ fakeApi: FakeApi }>({
@@ -79,6 +93,8 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         feedback: [],
         turnFailuresLeft: 0,
         dictionary: {},
+        scenarios: [],
+        conversationScenarios: [],
       }
       let conversationCount = 0
       await page.route('**/api/languages', async (route) => {
@@ -91,6 +107,8 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
       })
       await page.route('**/api/conversations', async (route) => {
         conversationCount += 1
+        const body = route.request().postDataJSON() as { scenario_id?: string | null }
+        api.conversationScenarios.push(body.scenario_id ?? null)
         await route.fulfill({
           status: 201,
           json: { id: `c-${conversationCount}`, opening: api.opening },
@@ -112,6 +130,9 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         } else {
           await route.fulfill({ status: 404, json: { detail: 'No match' } })
         }
+      })
+      await page.route('**/api/scenarios?*', async (route) => {
+        await route.fulfill({ json: api.scenarios })
       })
       await use(api)
     },
