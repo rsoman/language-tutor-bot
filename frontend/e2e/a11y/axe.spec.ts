@@ -10,8 +10,10 @@ const screens = [
 ]
 const modes = ['/conversation', '/grammar', '/vocabulary']
 
+// 'qaa' is a private-use language code (ISO 639-2 qaa to qtz): valid for the HTML lang
+// attribute, so axe's valid-lang rule passes, yet it names no real language.
 const fakeLanguages = [
-  { code: 'xx', name: 'Examplish', native_name: 'Exemplar', level_system: 'TEST', levels: ['L1'] },
+  { code: 'qaa', name: 'Examplish', native_name: 'Exemplar', level_system: 'TEST', levels: ['L1'] },
 ]
 
 const sentence = [
@@ -94,7 +96,7 @@ for (const screen of screens) {
     )
     await page.setViewportSize({ width: screen.width, height: screen.height })
     await page.addInitScript(() =>
-      localStorage.setItem('vaikhari.languageChoice', JSON.stringify({ code: 'xx', level: 'L1' })),
+      localStorage.setItem('vaikhari.languageChoice', JSON.stringify({ code: 'qaa', level: 'L1' })),
     )
     await page.goto('/conversation')
     await page.getByRole('textbox', { name: 'Message' }).fill('Start bad part end.')

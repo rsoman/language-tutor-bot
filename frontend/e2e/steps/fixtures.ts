@@ -58,41 +58,46 @@ export type FakeApi = {
 }
 
 export const test = base.extend<{ fakeApi: FakeApi }>({
-  fakeApi: async ({ page }, use) => {
-    const api: FakeApi = {
-      languages: [EXAMPLISH, SAMPLESE],
-      failuresLeft: 0,
-      opening: { text: 'Default opening', translation: null },
-      reply: { text: 'Default reply', translation: null },
-      feedback: [],
-      turnFailuresLeft: 0,
-    }
-    let conversationCount = 0
-    await page.route('**/api/languages', async (route) => {
-      if (api.failuresLeft > 0) {
-        api.failuresLeft -= 1
-        await route.fulfill({ status: 500, body: 'fake failure' })
-        return
+  // auto: true installs the fake backend in every scenario, even one whose steps never
+  // mention it, so no test can reach a real API by accident.
+  fakeApi: [
+    async ({ page }, use) => {
+      const api: FakeApi = {
+        languages: [EXAMPLISH, SAMPLESE],
+        failuresLeft: 0,
+        opening: { text: 'Default opening', translation: null },
+        reply: { text: 'Default reply', translation: null },
+        feedback: [],
+        turnFailuresLeft: 0,
       }
-      await route.fulfill({ json: api.languages })
-    })
-    await page.route('**/api/conversations', async (route) => {
-      conversationCount += 1
-      await route.fulfill({
-        status: 201,
-        json: { id: `c-${conversationCount}`, opening: api.opening },
+      let conversationCount = 0
+      await page.route('**/api/languages', async (route) => {
+        if (api.failuresLeft > 0) {
+          api.failuresLeft -= 1
+          await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        await route.fulfill({ json: api.languages })
       })
-    })
-    await page.route('**/api/conversations/*/turns', async (route) => {
-      if (api.turnFailuresLeft > 0) {
-        api.turnFailuresLeft -= 1
-        await route.fulfill({ status: 500, body: 'fake failure' })
-        return
-      }
-      await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })
-    })
-    await use(api)
-  },
+      await page.route('**/api/conversations', async (route) => {
+        conversationCount += 1
+        await route.fulfill({
+          status: 201,
+          json: { id: `c-${conversationCount}`, opening: api.opening },
+        })
+      })
+      await page.route('**/api/conversations/*/turns', async (route) => {
+        if (api.turnFailuresLeft > 0) {
+          api.turnFailuresLeft -= 1
+          await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })
+      })
+      await use(api)
+    },
+    { auto: true },
+  ],
 })
 
 export const { Given, When, Then } = createBdd(test)

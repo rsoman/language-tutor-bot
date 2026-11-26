@@ -1,0 +1,119 @@
+.log {
+  flex: 1;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.tutor {
+  align-self: flex-start;
+  max-width: 85%;
+}
+
+.learner {
+  align-self: flex-end;
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+/* Feedback cards are full width on phones. */
+.learner:has(article) {
+  align-self: stretch;
+  max-width: none;
+}
+
+.tutorBubble,
+.learnerBubble {
+  margin: 0;
+  padding: var(--space-3) 14px;
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tutorBubble {
+  border-radius: 16px 16px 16px 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+}
+
+.learnerBubble {
+  border-radius: 16px 16px 6px 16px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.translation {
+  margin: var(--space-1) 0 0 6px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.failed {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-accent);
+}
+
+.retry {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.typing {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.dots {
+  width: 24px;
+  height: 8px;
+  background: radial-gradient(circle, var(--color-muted) 3px, transparent 3.5px) 0 0 / 8px 8px
+    repeat-x;
+}
+
+@media (min-width: 640px) {
+  .tutor,
+  .learner {
+    max-width: 520px;
+  }
+
+  .learner:has(article) {
+    align-self: flex-end;
+    max-width: 520px;
+  }
+
+  .tutorBubble,
+  .learnerBubble {
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+
+  .tutorBubble {
+    border-radius: 18px 18px 18px 6px;
+  }
+
+  .learnerBubble {
+    border-radius: 18px 18px 6px 18px;
+  }
+}

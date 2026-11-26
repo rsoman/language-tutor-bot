@@ -1,0 +1,47 @@
+/* Pinned to the bottom of the screen; on phones it sits just above the tab bar (D0004). */
+.composer {
+  position: sticky;
+  bottom: calc(56px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) 0;
+  background: var(--color-ground);
+}
+
+.input {
+  flex: 1;
+  height: 52px;
+  padding: 14px 18px;
+  resize: none;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.send {
+  height: 52px;
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+@media (min-width: 640px) {
+  .composer {
+    bottom: 0;
+    padding: var(--space-4) 0 28px;
+  }
+}

@@ -38,10 +38,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Conversation
+         * @description Starts a conversation and returns the tutor's opening message.
+         */
+        post: operations["start_conversation_conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conversations/{conversation_id}/turns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take Turn
+         * @description Sends the learner's message; returns feedback on it and the tutor's reply.
+         */
+        post: operations["take_turn_conversations__conversation_id__turns_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * ConversationIn
+         * @description Starts a conversation in one language at one of its levels.
+         */
+        ConversationIn: {
+            /**
+             * Language
+             * @description Language code from GET /languages, e.g. 'xx'
+             */
+            language: string;
+            /**
+             * Level
+             * @description One of that language's levels
+             */
+            level: string;
+        };
+        /** ConversationOut */
+        ConversationOut: {
+            /** Id */
+            id: string;
+            opening: components["schemas"]["TutorMessageOut"];
+        };
+        /**
+         * FeedbackOut
+         * @description One feedback card on a learner message (D0001, D0002).
+         *
+         *     Which fields are set depends on the kind: an unclear word only has an explanation
+         *     (the tutor's question); the others have original, replacement and corrected_sentence.
+         */
+        FeedbackOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "grammar_error" | "new_word" | "known_word" | "unclear_word";
+            /**
+             * Original
+             * @description What the learner wrote
+             */
+            original?: string | null;
+            /**
+             * Replacement
+             * @description What it should be
+             */
+            replacement?: string | null;
+            /** Explanation */
+            explanation?: string | null;
+            /**
+             * Corrected Sentence
+             * @description The whole corrected sentence; joining the texts gives it
+             */
+            corrected_sentence?: components["schemas"]["SegmentOut"][] | null;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** HealthResponse */
         HealthResponse: {
             /** Status */
@@ -61,6 +159,53 @@ export interface components {
             level_system: string;
             /** Levels */
             levels: string[];
+        };
+        /**
+         * SegmentOut
+         * @description A piece of the corrected sentence. Changed pieces are shown in bold (D0001).
+         */
+        SegmentOut: {
+            /** Text */
+            text: string;
+            /** Changed */
+            changed: boolean;
+        };
+        /** TurnIn */
+        TurnIn: {
+            /** Message */
+            message: string;
+        };
+        /** TurnOut */
+        TurnOut: {
+            /** Feedback */
+            feedback: components["schemas"]["FeedbackOut"][];
+            reply: components["schemas"]["TutorMessageOut"];
+        };
+        /**
+         * TutorMessageOut
+         * @description Something the tutor says, in the target language, with an optional translation.
+         */
+        TutorMessageOut: {
+            /** Text */
+            text: string;
+            /**
+             * Translation
+             * @description The same message in the learner's own language
+             */
+            translation?: string | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -107,6 +252,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LanguageOut"][];
+                };
+            };
+        };
+    };
+    start_conversation_conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    take_turn_conversations__conversation_id__turns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TurnIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

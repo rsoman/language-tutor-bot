@@ -44,10 +44,226 @@
           }
         }
       }
+    },
+    "/conversations": {
+      "post": {
+        "tags": [
+          "conversations"
+        ],
+        "summary": "Start Conversation",
+        "description": "Starts a conversation and returns the tutor's opening message.",
+        "operationId": "start_conversation_conversations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{conversation_id}/turns": {
+      "post": {
+        "tags": [
+          "conversations"
+        ],
+        "summary": "Take Turn",
+        "description": "Sends the learner's message; returns feedback on it and the tutor's reply.",
+        "operationId": "take_turn_conversations__conversation_id__turns_post",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TurnIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ConversationIn": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "description": "Language code from GET /languages, e.g. 'xx'"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level",
+            "description": "One of that language's levels"
+          }
+        },
+        "type": "object",
+        "required": [
+          "language",
+          "level"
+        ],
+        "title": "ConversationIn",
+        "description": "Starts a conversation in one language at one of its levels."
+      },
+      "ConversationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "opening": {
+            "$ref": "#/components/schemas/TutorMessageOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "opening"
+        ],
+        "title": "ConversationOut"
+      },
+      "FeedbackOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "grammar_error",
+              "new_word",
+              "known_word",
+              "unclear_word"
+            ],
+            "title": "Kind"
+          },
+          "original": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original",
+            "description": "What the learner wrote"
+          },
+          "replacement": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replacement",
+            "description": "What it should be"
+          },
+          "explanation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Explanation"
+          },
+          "corrected_sentence": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SegmentOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected Sentence",
+            "description": "The whole corrected sentence; joining the texts gives it"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "FeedbackOut",
+        "description": "One feedback card on a learner message (D0001, D0002).\n\nWhich fields are set depends on the kind: an unclear word only has an explanation\n(the tutor's question); the others have original, replacement and corrected_sentence."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
       "HealthResponse": {
         "properties": {
           "status": {
@@ -101,6 +317,126 @@
           "levels"
         ],
         "title": "LanguageOut"
+      },
+      "SegmentOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "changed": {
+            "type": "boolean",
+            "title": "Changed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "changed"
+        ],
+        "title": "SegmentOut",
+        "description": "A piece of the corrected sentence. Changed pieces are shown in bold (D0001)."
+      },
+      "TurnIn": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "TurnIn"
+      },
+      "TurnOut": {
+        "properties": {
+          "feedback": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackOut"
+            },
+            "type": "array",
+            "title": "Feedback"
+          },
+          "reply": {
+            "$ref": "#/components/schemas/TutorMessageOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "feedback",
+          "reply"
+        ],
+        "title": "TurnOut"
+      },
+      "TutorMessageOut": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "translation": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Translation",
+            "description": "The same message in the learner's own language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TutorMessageOut",
+        "description": "Something the tutor says, in the target language, with an optional translation."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

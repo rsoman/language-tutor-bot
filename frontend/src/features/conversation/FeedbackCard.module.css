@@ -1,0 +1,68 @@
+.card {
+  width: 100%;
+  padding: var(--space-3) 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-top-width: 4px;
+}
+
+.card[data-tone='mistake'] {
+  border-top-color: var(--color-accent);
+}
+
+.card[data-tone='help'] {
+  border-top-color: var(--color-highlight);
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.card[data-tone='mistake'] .heading {
+  color: var(--color-accent);
+}
+
+.note {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.change {
+  margin: var(--space-2) 0 0;
+  font-size: 15px;
+}
+
+.original {
+  color: var(--color-muted);
+}
+
+.explanation {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.sentence {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+  font-size: 15px;
+}
+
+@media (min-width: 640px) {
+  .card {
+    width: 440px;
+    padding: 14px var(--space-4);
+  }
+}
