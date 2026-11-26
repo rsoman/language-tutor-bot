@@ -1,8 +1,9 @@
 # 003: Conversation chat (frontend, with the API contract stub)
 
 - **Status:** ready (Ravi asked for the next frontend specs to be built while he reviews PR #3, 2026-11-26)
-- **Owner:** Claude-generated (frontend, Pydantic schemas, a router that returns 501). The conversation
-  logic behind the endpoints stays hand-written by Ravi.
+- **Owner:** Claude-generated (frontend, request models, a router that returns 501). The response
+  models (the tutor's LLM output) and the conversation logic behind the endpoints are hand-written
+  by Ravi (his decision, 2026-11-26).
 - **Phase:** 1
 - **Builds on:** spec 002 (PR #3)
 
@@ -68,10 +69,14 @@ Red (accent) means a mistake, amber (highlight) means help, as on the Cards boar
 
 ## API contract
 
-New Pydantic models and a router in `backend/src/tutor/routers/conversations.py`. Both endpoints
-validate their input and then answer `501 Not Implemented` with
-`{"detail": "Conversation logic is not written yet"}`. Ravi replaces the 501 with the real logic
-(that part is his). The frontend types are generated from this contract (`pnpm gen:api`).
+A router in `backend/src/tutor/routers/conversations.py` with the request models (`ConversationIn`,
+`TurnIn`). Both endpoints validate their input and then answer `501 Not Implemented` with
+`{"detail": "Conversation logic is not written yet"}`.
+
+The response shapes below are the tutor's LLM output, so **Ravi writes their Pydantic models**
+along with the logic that replaces the 501s. Until then they exist only as this description and as
+hand-written frontend types in `frontend/src/api/tutorTypes.ts`, which mirror it. Once his models
+land, the frontend switches to generated types (`pnpm gen:api`) and deletes `tutorTypes.ts`.
 
 `POST /conversations`
 
@@ -196,7 +201,9 @@ Backend criteria (pytest, `backend/tests/test_conversations.py`; a BDD feature i
 - [x] `POST /conversations` with a supported language and level answers 501.
 - [x] `POST /conversations` with an unsupported language, or a level outside that language's levels, answers 422.
 - [x] `POST /conversations/{id}/turns` with an empty message, or one over 500 characters, answers 422; a valid one answers 501.
-- [x] The OpenAPI schema lists `ConversationOut`, `TurnOut` and `FeedbackOut` with the four kinds.
+- [x] The OpenAPI schema lists the request models `ConversationIn` and `TurnIn`. (The response models
+      are Ravi's; this criterion replaced "lists `ConversationOut`, `TurnOut` and `FeedbackOut`" after
+      his decision on 2026-11-26.)
 
 Component tests (Vitest) cover: each card kind's heading and colour class; the corrected sentence
 renders changed segments in `<strong>`; Enter sends and Shift+Enter does not; the 500-character
@@ -216,7 +223,8 @@ Other criteria:
     it. The alternative (the client sends the whole history every turn) is simpler now but makes
     mistake history and drills harder later.
   - **Feedback schema** as above: four kinds, nullable fields, and segments for the corrected sentence.
-    This is the contract the hand-written tutor logic must produce. Ravi owns its final shape.
+    This is the contract the hand-written tutor logic must produce. Ravi owns its final shape and
+    writes the Pydantic models for it.
   - **`known_word`** names D0002's "known word in own language" category; `unclear_word` its
     "unclear word (needs clarification)".
   - **The routers answer 501** instead of fake replies, so nothing pretends to be the tutor.
