@@ -11,11 +11,7 @@ export type { Conversation, Feedback, Segment, TutorMessage, Turn, Word } from '
 type Schemas = components['schemas']
 
 export type Language = Schemas['LanguageOut']
-<<<<<<< HEAD
-export type Word = Schemas['WordOut']
 export type Scenario = Schemas['ScenarioOut']
-=======
->>>>>>> claude/spec-004-word-help
 
 /** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
 export class ApiError extends Error {
