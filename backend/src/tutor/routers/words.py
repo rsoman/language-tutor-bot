@@ -1,13 +1,15 @@
 """Word lookup API contract (spec 004).
 
-Claude-generated boilerplate: models and an endpoint that validates its input and then
-answers 501. Finding the word (word data, retrieval) is hand-written by the owner.
+Claude-generated boilerplate: the request model and an endpoint that validates its input and
+then answers 501. The owner writes the response model (the word, its features and an example)
+together with the lookup itself (word data, retrieval). The response contract is described in
+specs/004-word-help.md.
 """
 
-from typing import Annotated
+from typing import Annotated, NoReturn
 
 from fastapi import APIRouter, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from tutor.routers.common import LanguageLevelIn
 
@@ -22,32 +24,8 @@ class WordLookupIn(LanguageLevelIn):
     query: str = Field(min_length=1, max_length=60)
 
 
-class WordFeatureOut(BaseModel):
-    """One grammatical feature the language's profile declares, e.g. a plural (D0003)."""
-
-    name: str
-    value: str
-
-
-class WordExampleOut(BaseModel):
-    """An example sentence in the target language, with its translation."""
-
-    text: str
-    translation: str | None = None
-
-
-class WordOut(BaseModel):
-    """The best match for a lookup, in the target language."""
-
-    headword: str = Field(description="The word as the learner should write it")
-    part_of_speech: str
-    features: list[WordFeatureOut]
-    example: WordExampleOut | None = Field(
-        default=None, description="An example sentence and its translation"
-    )
-
-
-@router.get("/lookup")
-def lookup_word(params: Annotated[WordLookupIn, Query()]) -> WordOut:
+# response_model=None: the response model is the owner's to write (see the module docstring).
+@router.get("/lookup", response_model=None)
+def lookup_word(params: Annotated[WordLookupIn, Query()]) -> NoReturn:
     """Looks up one word. 404 when nothing matches (once the logic exists)."""
     raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=NOT_WRITTEN_YET)

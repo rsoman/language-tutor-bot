@@ -54,9 +54,8 @@ def test_lookup_rejects_query_over_60_characters(
     assert lookup(client, code, level, "a" * 61) == 422
 
 
-def test_openapi_lists_word_out_with_features(client: TestClient) -> None:
-    schemas = client.get("/openapi.json").json()["components"]["schemas"]
-    assert "WordOut" in schemas
-    feature_ref = schemas["WordOut"]["properties"]["features"]["items"]["$ref"]
-    feature = schemas[feature_ref.split("/")[-1]]
-    assert set(feature["properties"]) == {"name", "value"}
+def test_openapi_lists_the_lookup_parameters(client: TestClient) -> None:
+    # The response model is the owner's to write (spec 004); the request side is ours.
+    operation = client.get("/openapi.json").json()["paths"]["/words/lookup"]["get"]
+    names = {parameter["name"] for parameter in operation["parameters"]}
+    assert names == {"language", "level", "query"}

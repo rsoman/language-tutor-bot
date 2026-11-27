@@ -283,43 +283,6 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
-        /**
-         * WordExampleOut
-         * @description An example sentence in the target language, with its translation.
-         */
-        WordExampleOut: {
-            /** Text */
-            text: string;
-            /** Translation */
-            translation?: string | null;
-        };
-        /**
-         * WordFeatureOut
-         * @description One grammatical feature the language's profile declares, e.g. a plural (D0003).
-         */
-        WordFeatureOut: {
-            /** Name */
-            name: string;
-            /** Value */
-            value: string;
-        };
-        /**
-         * WordOut
-         * @description The best match for a lookup, in the target language.
-         */
-        WordOut: {
-            /**
-             * Headword
-             * @description The word as the learner should write it
-             */
-            headword: string;
-            /** Part Of Speech */
-            part_of_speech: string;
-            /** Features */
-            features: components["schemas"]["WordFeatureOut"][];
-            /** @description An example sentence and its translation */
-            example?: components["schemas"]["WordExampleOut"] | null;
-        };
     };
     responses: never;
     parameters: never;
@@ -458,7 +421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["WordOut"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

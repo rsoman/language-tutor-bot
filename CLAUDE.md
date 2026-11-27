@@ -30,7 +30,8 @@ The owner hand-writes (do NOT implement these unless a spec explicitly says so):
 - RAG: chunking, embeddings, retrieval
 - Eval datasets, graders, rubrics
 - Guardrails and token budget logic
-- Pydantic models for the tutor's LLM output (e.g. tutor messages, feedback cards). Claude may
+- Pydantic models for the tutor's LLM output (e.g. tutor messages, feedback cards) and for word
+  lookup results. Claude may
   write request models and 501 stubs; for LLM-output responses, describe the shape in the spec
   and leave the model to the owner.
 

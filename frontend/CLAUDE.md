@@ -9,8 +9,8 @@ Read the root `CLAUDE.md` first. This file adds frontend rules.
 - Checks before a PR: `pnpm lint && pnpm typecheck && pnpm test` (and `pnpm e2e` when Playwright tests exist).
 - Colours, spacing and fonts come from `src/styles/tokens.css`. Never hard-code a hex value in a component.
 - Target-language content (words, level names, articles) comes from the API, never from component code.
-- API types are generated (`pnpm gen:api`), never hand-written. Exception: the tutor's output types
-  live in `src/api/tutorTypes.ts`, hand-written from the spec, until the owner's backend models exist.
+- API types are generated (`pnpm gen:api`), never hand-written. Exception: the tutor's output and word
+  lookup types live in `src/api/tutorTypes.ts`, hand-written from the spec, until the owner's backend models exist.
 - After a backend API change, run `bash scripts/export-openapi.sh` and commit `openapi.json` and `src/api/schema.d.ts`.
 - BDD scenarios live in `e2e/features/` (copied word for word from the spec), steps in `e2e/steps/`.
   Tests use fake languages (`xx`, `yy`), never real ones.
