@@ -184,9 +184,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WordOut"
-                }
+                "schema": {}
               }
             }
           },
@@ -348,89 +346,6 @@
           "type"
         ],
         "title": "ValidationError"
-      },
-      "WordExampleOut": {
-        "properties": {
-          "text": {
-            "type": "string",
-            "title": "Text"
-          },
-          "translation": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Translation"
-          }
-        },
-        "type": "object",
-        "required": [
-          "text"
-        ],
-        "title": "WordExampleOut",
-        "description": "An example sentence in the target language, with its translation."
-      },
-      "WordFeatureOut": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "value": {
-            "type": "string",
-            "title": "Value"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name",
-          "value"
-        ],
-        "title": "WordFeatureOut",
-        "description": "One grammatical feature the language's profile declares, e.g. a plural (D0003)."
-      },
-      "WordOut": {
-        "properties": {
-          "headword": {
-            "type": "string",
-            "title": "Headword",
-            "description": "The word as the learner should write it"
-          },
-          "part_of_speech": {
-            "type": "string",
-            "title": "Part Of Speech"
-          },
-          "features": {
-            "items": {
-              "$ref": "#/components/schemas/WordFeatureOut"
-            },
-            "type": "array",
-            "title": "Features"
-          },
-          "example": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/WordExampleOut"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "An example sentence and its translation"
-          }
-        },
-        "type": "object",
-        "required": [
-          "headword",
-          "part_of_speech",
-          "features"
-        ],
-        "title": "WordOut",
-        "description": "The best match for a lookup, in the target language."
       }
     }
   }
