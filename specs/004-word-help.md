@@ -1,8 +1,9 @@
 # 004: Word help (frontend, with the API contract stub)
 
 - **Status:** ready (built ahead of review, at Ravi's request, 2026-11-26)
-- **Owner:** Claude-generated (frontend, Pydantic models, a router that answers 501). Looking words
-  up (word data, retrieval) is hand-written by Ravi.
+- **Owner:** Claude-generated (frontend, the request model, a router that answers 501). The response
+  model and looking words up (word data, retrieval) are hand-written by Ravi (his decision,
+  2026-11-27).
 - **Phase:** 1
 - **Builds on:** spec 003 (PR #4)
 
@@ -47,14 +48,18 @@ a bottom sheet").
 
 ## API contract
 
-New router `backend/src/tutor/routers/words.py`. Validates input, then answers 501
-`{"detail": "Word lookup is not written yet"}`.
+New router `backend/src/tutor/routers/words.py` with the request model (`WordLookupIn`). Validates
+input, then answers 501 `{"detail": "Word lookup is not written yet"}`.
+
+**Ravi writes the response model** (the shape below) with the lookup logic. Until then it exists
+only as this description and as the hand-written frontend type `Word` in
+`frontend/src/api/tutorTypes.ts`, which mirrors it.
 
 `GET /words/lookup?language=xx&level=L1&query=coffee`
 
 - `language` must be supported and `level` one of its levels (422 otherwise).
 - `query` is 1 to 60 characters (422 otherwise).
-- `200 WordOut`; `404` with `{"detail": "No match"}` when nothing matches (once the logic exists).
+- `200` with a word (shape below); `404` with `{"detail": "No match"}` when nothing matches (once the logic exists).
 
 ```json
 {
@@ -125,7 +130,9 @@ Backend criteria (pytest, `backend/tests/test_words.py`):
 
 - [x] A valid lookup answers 501.
 - [x] An unsupported language, a level outside the language, an empty query, or a query over 60 characters answers 422.
-- [x] The OpenAPI schema lists `WordOut` with `features` as a list of `{name, value}`.
+- [x] The OpenAPI schema lists the lookup's parameters `language`, `level` and `query`. (The response
+      model is Ravi's; this criterion replaced "lists `WordOut` with `features` as a list of
+      `{name, value}`" after his decision on 2026-11-27.)
 
 Component tests (Vitest): the "Looking up…" state; the failure state with "Try again"; a word with
 no features and no example shows only the headword and part of speech; inserting into an empty box

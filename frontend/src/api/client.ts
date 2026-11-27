@@ -1,18 +1,21 @@
 // A small typed wrapper around fetch() for the backend API.
 // The types come from schema.d.ts, which is generated from the backend's OpenAPI schema
 // (run `bash scripts/export-openapi.sh`). Never edit schema.d.ts by hand.
-// Exception: the tutor's output types are hand-written in tutorTypes.ts until the owner's
-// backend models exist.
+// Exception: the tutor's output and word lookup types are hand-written in tutorTypes.ts until
+// the owner's backend models exist.
 import type { components } from './schema'
-import type { Conversation, Turn } from './tutorTypes'
+import type { Conversation, Turn, Word } from './tutorTypes'
 
-export type { Conversation, Feedback, Segment, TutorMessage, Turn } from './tutorTypes'
+export type { Conversation, Feedback, Segment, TutorMessage, Turn, Word } from './tutorTypes'
 
 type Schemas = components['schemas']
 
 export type Language = Schemas['LanguageOut']
+<<<<<<< HEAD
 export type Word = Schemas['WordOut']
 export type Scenario = Schemas['ScenarioOut']
+=======
+>>>>>>> claude/spec-004-word-help
 
 /** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
 export class ApiError extends Error {
