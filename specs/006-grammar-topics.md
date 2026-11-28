@@ -52,8 +52,12 @@ combination test becomes a pinned bar at the bottom).
   - learned, no `best_score`: "Learned <n>× · no test yet".
   - learned with a score: "Learned <n>× · best test <correct>/<total>".
 - The learn action reads "Learn" when `times_learned` is 0, else "Learn again".
+- With no topics at the level the page says "No grammar topics for <level> yet."
 - Each checkbox is labelled "Include <title> in combination test". "Select all passed" ticks exactly
-  the passed topics (and unticks the others); "Clear" unticks all.
+  the passed topics (and unticks the others); it is disabled when no topic is passed. "Clear"
+  unticks all.
+- The combination test action reads "Choose topics first" and is disabled with nothing ticked, then
+  "Start test · 1 topic", "Start test · 2 topics" and so on.
 - Links:
   - Learn: `/grammar/topics/<id>/lesson` (spec 007).
   - Test: `/grammar/topics/<id>/test` (spec 008).
@@ -67,7 +71,8 @@ combination test becomes a pinned bar at the bottom).
 New router `backend/src/tutor/routers/grammar.py`; validates input, then answers 501
 `{"detail": "Grammar topics are not written yet"}`.
 
-`GET /grammar/topics?language=xx&level=L1` → `200 list[GrammarTopicOut]`
+`GET /grammar/topics?language=xx&level=L1` → `200 list[GrammarTopicOut]` once the owner writes the
+logic. This spec delivers the stub, which answers 501 to a valid request.
 
 ```json
 {
@@ -83,7 +88,9 @@ New router `backend/src/tutor/routers/grammar.py`; validates input, then answers
 - `title` is in the learner's language; `example` in the target language.
 - `best_score` is null until the learner has taken a test on the topic.
 - `passed` is decided by the server (the pass mark is not the frontend's business).
-- 422 for an unsupported language or a level outside it (shared `LanguageLevelIn`).
+- 422 for an unsupported language, a level outside it, or a missing parameter (shared
+  `LanguageLevelIn`). The language is checked first, so with an unsupported language the level is
+  not looked at.
 
 ## Test scenarios
 
@@ -144,6 +151,21 @@ Feature: Grammar topics
     Given the learner uses a phone-sized screen
     When the learner opens Grammar
     Then the combination test bar is just above the mode tabs
+
+  Scenario: Learn opens the lesson page, which is not built yet
+    When the learner opens Grammar
+    And the learner picks "Learn" for "Topic three"
+    Then the address ends with "/grammar/topics/g-3/lesson"
+    And the page shows the heading "Lesson"
+    And the page shows "This part is not built yet."
+    And the "Grammar" mode tab is the current page
+
+  Scenario: Test opens the topic test page, which is not built yet
+    When the learner opens Grammar
+    And the learner picks "Test" for "Topic one"
+    Then the address ends with "/grammar/topics/g-1/test"
+    And the page shows the heading "Test"
+    And the "Grammar" mode tab is the current page
 ```
 
 ### Negative
@@ -192,6 +214,30 @@ Feature: Grammar topics
     Given the learner uses a phone-sized screen
     When the learner opens Grammar
     Then the combination test bar holds only "Select all passed", "Clear" and the combination test action
+
+  Scenario: The learner sees that topics are loading
+    Given the grammar topics request is slow
+    When the learner opens Grammar
+    Then the page shows "Loading grammar topics…"
+
+  Scenario: Changing the language clears the ticks
+    When the learner opens Grammar
+    And the learner ticks "Topic two"
+    And the learner changes the language to "Samplese"
+    And the learner changes the language to "Examplish"
+    Then no topic is ticked
+
+  Scenario: A topic learned but never tested says so
+    Given "Topic two" has been learned 1× with no test yet
+    When the learner opens Grammar
+    Then the "Topic two" topic shows "Learned 1× · no test yet"
+
+  Scenario: The combination test lists topics in list order, not tick order
+    When the learner opens Grammar
+    And the learner ticks "Topic three"
+    And the learner ticks "Topic one"
+    And the learner starts the combination test
+    Then the address ends with "/grammar/test?topics=g-1,g-3"
 ```
 
 ### API (backend)
@@ -209,6 +255,7 @@ Feature: Grammar topics API contract
         | a supported language    | one of its levels        | 501    |
         | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
+        | a supported language    | no level at all          | 422    |
 ```
 
 ### Below the UI: backend and component tests
@@ -217,12 +264,11 @@ Backend criteria (pytest, `backend/tests/test_grammar.py`):
 
 - [ ] `GET /grammar/topics` with a supported language and level answers 501; an unsupported language or level answers 422.
 - [ ] The OpenAPI schema lists `GrammarTopicOut` with `best_score` nullable.
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 Component tests (Vitest): loading and failure states; the three progress-line forms; a topic's
 example carries `lang`; "Start test · 2 topics" (plural); ticks are cleared when the level changes;
 the not-built-yet placeholder for a lesson link.
-
-- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 ## Non-behavioural criteria
 
