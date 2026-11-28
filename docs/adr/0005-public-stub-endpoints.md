@@ -1,6 +1,6 @@
 # 0005: Stub endpoints stay public until auth lands
 
-- **Status:** proposed (exception accepted in principle by the owner, 2026-11-28)
+- **Status:** accepted (2026-11-28, PR #20)
 - **Date:** 2026-11-28
 - **Supersedes:** none
 
