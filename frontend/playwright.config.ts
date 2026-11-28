@@ -24,6 +24,8 @@ export default defineConfig({
     { name: 'bdd', testDir: bddTestDir, use: { ...devices['Desktop Chrome'] } },
     // Plain Playwright tests for non-behavioural criteria such as accessibility.
     { name: 'a11y', testDir: 'e2e/a11y', use: { ...devices['Desktop Chrome'] } },
+    // Screenshots of each mode at each breakpoint, uploaded by CI for PR review.
+    { name: 'screenshots', testDir: 'e2e/screenshots', use: { ...devices['Desktop Chrome'] } },
   ],
   webServer: {
     // --host 127.0.0.1: Vite may otherwise listen only on IPv6 (::1) on CI runners,

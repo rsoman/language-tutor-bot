@@ -3,7 +3,7 @@ import styles from './LanguagePrompt.module.css'
 
 /** Shown in a mode while no language is chosen: asks for one, or explains why it can't. */
 export function LanguagePrompt() {
-  const { status, openPicker, retry } = useLanguageChoice()
+  const { status, languages, openPicker, retry } = useLanguageChoice()
 
   if (status === 'loading') {
     return <p className={styles.text}>Loading languages…</p>
@@ -18,6 +18,10 @@ export function LanguagePrompt() {
         </button>
       </div>
     )
+  }
+
+  if (languages.length === 0) {
+    return <p className={styles.text}>No languages are available yet.</p>
   }
 
   return (

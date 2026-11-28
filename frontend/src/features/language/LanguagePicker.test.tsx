@@ -66,4 +66,63 @@ describe('LanguagePicker', () => {
       level: 'S1',
     })
   })
+
+  test('Tab from the last control wraps to the first one inside the picker', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await waitFor(() => expect(languageButton()).toBeEnabled())
+    await user.click(languageButton())
+    const dialog = screen.getByRole('dialog', { name: 'Choose language and level' })
+    within(dialog).getByRole('button', { name: 'Done' }).focus()
+
+    await user.tab()
+    expect(dialog).toContainElement(document.activeElement as HTMLElement)
+  })
+
+  test('Shift+Tab from the first control wraps to Done', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await waitFor(() => expect(languageButton()).toBeEnabled())
+    await user.click(languageButton())
+    const dialog = screen.getByRole('dialog', { name: 'Choose language and level' })
+    const first = within(dialog).getAllByRole('radio')[0]
+    if (!first) throw new Error('No radio in the picker')
+    first.focus()
+
+    await user.tab({ shift: true })
+    expect(within(dialog).getByRole('button', { name: 'Done' })).toHaveFocus()
+  })
+
+  test('levels are sorted by rank, and the easiest one is picked', async () => {
+    server.use(
+      http.get('*/api/languages', () =>
+        HttpResponse.json([
+          {
+            code: 'zz',
+            name: 'Ordish',
+            native_name: 'Ordo',
+            level_system: 'TEST',
+            levels: [
+              { code: 'Alpha', rank: 2 },
+              { code: 'Zed', rank: 1 },
+            ],
+          },
+        ]),
+      ),
+    )
+    const user = userEvent.setup()
+    renderApp()
+    await waitFor(() => expect(languageButton()).toBeEnabled())
+    await user.click(languageButton())
+    await user.click(screen.getByRole('radio', { name: 'Ordish' }))
+    const levels = within(screen.getByRole('group', { name: 'Level (TEST)' })).getAllByRole('radio')
+    expect(levels.map((radio) => radio.getAttribute('value'))).toEqual(['Zed', 'Alpha'])
+    expect(screen.getByRole('radio', { name: 'Zed' })).toBeChecked()
+  })
+
+  test('with no languages the prompt says none are available', async () => {
+    server.use(http.get('*/api/languages', () => HttpResponse.json([])))
+    renderApp()
+    expect(await screen.findByText('No languages are available yet.')).toBeInTheDocument()
+  })
 })

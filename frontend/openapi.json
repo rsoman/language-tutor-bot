@@ -348,7 +348,7 @@
           },
           "levels": {
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/LevelOut"
             },
             "type": "array",
             "title": "Levels"
@@ -363,6 +363,24 @@
           "levels"
         ],
         "title": "LanguageOut"
+      },
+      "LevelOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "rank"
+        ],
+        "title": "LevelOut"
       },
       "ScenarioOut": {
         "properties": {

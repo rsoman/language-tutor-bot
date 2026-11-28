@@ -6,7 +6,10 @@ export const EXAMPLISH: Language = {
   name: 'Examplish',
   native_name: 'Exemplar',
   level_system: 'TEST',
-  levels: ['L1', 'L2'],
+  levels: [
+    { code: 'L1', rank: 1 },
+    { code: 'L2', rank: 2 },
+  ],
 }
 
 export const SAMPLESE: Language = {
@@ -14,5 +17,5 @@ export const SAMPLESE: Language = {
   name: 'Samplese',
   native_name: 'Samplo',
   level_system: 'TEST',
-  levels: ['S1'],
+  levels: [{ code: 'S1', rank: 1 }],
 }
