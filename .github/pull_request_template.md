@@ -26,7 +26,7 @@ Paste the failing test output from before the implementation.
 ## Checks
 
 - [ ] Pre-push hook passed (no `--no-verify`).
-- [ ] UI change: before and after screenshots below, or not applicable.
+- [ ] UI change: link to the CI run's screenshot artifact (after) and the latest `main` run (before), or not applicable.
 - [ ] Under about 400 changed lines (excluding generated files and lockfiles), or reason: ...
 - [ ] New dependency: one-line reason given. New tool or framework: ADR and style section added.
 
