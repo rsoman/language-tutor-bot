@@ -4,7 +4,8 @@
 - **Owner:** Claude-generated (frontend, Pydantic models, a router that answers 501). The topic list,
   progress tracking and the pass mark are hand-written by Ravi.
 - **Phase:** 1
-- **Builds on:** spec 005 (PR #6)
+- **Builds on:** spec 005, scenario picker (spec-only PR #18, not merged yet; code in PR #6). This
+  spec only needs the mode tabs and the language and level choice from spec 002, which is on main.
 
 ## Goal
 
@@ -48,7 +49,9 @@ combination test becomes a pinned bar at the bottom).
   grammar topics…". Failure: "Couldn't load grammar topics." with "Try again". Without a chosen
   language the spec 002 prompt shows (unchanged).
 - Progress line, from the API's numbers:
-  - `times_learned` 0: "Not started".
+  - `times_learned` 0, no `best_score`: "Not started".
+  - `times_learned` 0 with a score (tested without learning): "Not learned yet · best test
+    <correct>/<total>". The "Passed" badge follows `passed` as usual.
   - learned, no `best_score`: "Learned <n>× · no test yet".
   - learned with a score: "Learned <n>× · best test <correct>/<total>".
 - The learn action reads "Learn" when `times_learned` is 0, else "Learn again".
@@ -232,6 +235,13 @@ Feature: Grammar topics
     When the learner opens Grammar
     Then the "Topic two" topic shows "Learned 1× · no test yet"
 
+  Scenario: A topic tested but never learned shows its score
+    Given "Topic three" has been tested 9/10 and passed without being learned
+    When the learner opens Grammar
+    Then the "Topic three" topic shows "Not learned yet · best test 9/10"
+    And the "Topic three" topic shows "Passed"
+    And the "Topic three" topic offers "Learn"
+
   Scenario: The combination test lists topics in list order, not tick order
     When the learner opens Grammar
     And the learner ticks "Topic three"
@@ -256,7 +266,13 @@ Feature: Grammar topics API contract
         | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
         | a supported language    | no level at all          | 422    |
+        | no language at all      | one of its levels        | 422    |
 ```
+
+The rows name values the steps take from the language registry: "a supported language" is any
+registered language and "one of its levels" any level it has, so no real language is written down.
+In the unsupported-language row the level is not looked at, because the language is checked first.
+In the no-language row the level is any registered level, sent without a `language` parameter.
 
 ### Below the UI: backend and component tests
 
@@ -266,7 +282,7 @@ Backend criteria (pytest, `backend/tests/test_grammar.py`):
 - [ ] The OpenAPI schema lists `GrammarTopicOut` with `best_score` nullable.
 - [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
-Component tests (Vitest): loading and failure states; the three progress-line forms; a topic's
+Component tests (Vitest): loading and failure states; the four progress-line forms; a topic's
 example carries `lang`; "Start test · 2 topics" (plural); ticks are cleared when the level changes;
 the not-built-yet placeholder for a lesson link.
 
