@@ -5,7 +5,9 @@ owner. Same rules for hand-written and generated code, Claude's PRs included.
 
 The agent runs when a PR opens, reopens or leaves draft. It does not run on every push. After
 fixing blocking findings, the author adds the `re-review` label to run it again. Pushes that only
-merge `main` in need no new review.
+merge `main` in need no new review, since CI still runs on every push.
+- **B** Whoever resolves a merge conflict by hand adds the `re-review` label: the resolution is new,
+  unreviewed code.
 
 ## Severity
 
