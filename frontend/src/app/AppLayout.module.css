@@ -11,13 +11,16 @@
   width: 100%;
   max-width: calc(var(--content-max-width) + 2 * var(--space-4));
   margin: 0 auto;
-  padding: var(--space-3) var(--space-4) calc(56px + var(--space-6));
+  display: flex;
+  flex-direction: column;
+  /* Room for the fixed tab bar (56px) plus a small gap. */
+  padding: var(--space-3) var(--space-4) calc(56px + var(--space-4));
 }
 
 /* Tablet and desktop: 40px side margins, tabs are back under the header. */
 @media (min-width: 640px) {
   .main {
     max-width: calc(var(--content-max-width) + 2 * var(--space-6));
-    padding: var(--space-4) var(--space-6) var(--space-6);
+    padding: var(--space-4) var(--space-6) 0;
   }
 }

@@ -16,3 +16,10 @@
   margin: var(--space-2) 0 0;
   color: var(--color-muted);
 }
+
+/* A built mode fills the content column, so its composer can sit at the bottom. */
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

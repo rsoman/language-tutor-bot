@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from tutor.config import get_settings
 from tutor.languages import LANGUAGES
+from tutor.routers import conversations
 
 
 class HealthResponse(BaseModel):
@@ -49,6 +50,8 @@ def create_app() -> FastAPI:
             )
             for p in LANGUAGES.values()
         ]
+
+    app.include_router(conversations.router)
 
     # Spec 001 (echo endpoint) is yours to hand-write. See specs/001-echo-endpoint.md.
 

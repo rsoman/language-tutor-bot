@@ -1,6 +1,7 @@
 import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 
+import { ConversationProvider } from '../features/conversation/ConversationContext'
 import { LanguageChoiceProvider } from '../features/language/LanguageChoiceContext'
 
 type AppProvidersProps = {
@@ -12,7 +13,9 @@ type AppProvidersProps = {
 export function AppProviders({ queryClient, children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageChoiceProvider>{children}</LanguageChoiceProvider>
+      <LanguageChoiceProvider>
+        <ConversationProvider>{children}</ConversationProvider>
+      </LanguageChoiceProvider>
     </QueryClientProvider>
   )
 }

@@ -29,3 +29,35 @@ export const LanguagesLanguagesGetResponseItem = zod.object({
 }))
 })
 export const LanguagesLanguagesGetResponse = zod.array(LanguagesLanguagesGetResponseItem)
+
+
+/**
+ * Starts a conversation and returns the tutor's opening message.
+ * @summary Start Conversation
+ */
+export const StartConversationConversationsPostBody = zod.object({
+  "language": zod.string().describe('Language code from GET /languages, e.g. \'xx\''),
+  "level": zod.string().describe('One of that language\'s levels')
+}).describe('Starts a conversation in one language at one of its levels.')
+
+export const StartConversationConversationsPostResponse = zod.unknown()
+
+
+/**
+ * Sends the learner's message; returns feedback on it and the tutor's reply.
+ * @summary Take Turn
+ */
+export const TakeTurnConversationsConversationIdTurnsPostParams = zod.object({
+  "conversation_id": zod.string()
+})
+
+export const takeTurnConversationsConversationIdTurnsPostBodyMessageMin = 1;
+export const takeTurnConversationsConversationIdTurnsPostBodyMessageMax = 500;
+
+
+
+export const TakeTurnConversationsConversationIdTurnsPostBody = zod.object({
+  "message": zod.string().min(takeTurnConversationsConversationIdTurnsPostBodyMessageMin).max(takeTurnConversationsConversationIdTurnsPostBodyMessageMax)
+})
+
+export const TakeTurnConversationsConversationIdTurnsPostResponse = zod.unknown()

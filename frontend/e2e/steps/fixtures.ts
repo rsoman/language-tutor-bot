@@ -37,10 +37,37 @@ export const SAMPLESE: FakeLanguage = {
   levels: [{ code: 'S1', rank: 1 }],
 }
 
+export type FakeTutorMessage = { text: string; translation: string | null }
+
+export type FakeSegment = { text: string; changed: boolean }
+
+export type FakeFeedback = {
+  kind: 'grammar_error' | 'new_word' | 'known_word' | 'unclear_word'
+  original: string | null
+  replacement: string | null
+  explanation: string | null
+  corrected_sentence: FakeSegment[] | null
+}
+
 export type FakeApi = {
   languages: FakeLanguage[]
   /** How many of the next /api/languages requests should fail with a 500. */
   failuresLeft: number
+  /** What POST /api/conversations answers with. */
+  opening: FakeTutorMessage
+  /** What the next POST /api/conversations/{id}/turns answers with. */
+  reply: FakeTutorMessage
+  feedback: FakeFeedback[]
+  /** How many of the next turn requests should fail with a 500. */
+  turnFailuresLeft: number
+  /** How many of the next POST /api/conversations requests should fail with a 500. */
+  startFailuresLeft: number
+  /** When true, POST /api/conversations does not answer until the scenario ends. */
+  slowStart: boolean
+  /** When true, turn requests do not answer until the scenario ends. */
+  slowReply: boolean
+  /** The message of every turn request the fake tutor received, oldest first. */
+  receivedMessages: string[]
   /** When true, /api/languages answers with JSON of the wrong shape. */
   wrongShape: boolean
   /** When true, /api/languages does not answer until the scenario ends. */
@@ -48,38 +75,86 @@ export type FakeApi = {
 }
 
 export const test = base.extend<{ fakeApi: FakeApi }>({
-  fakeApi: async ({ page }, use) => {
-    const api: FakeApi = {
-      languages: [EXAMPLISH, SAMPLESE],
-      failuresLeft: 0,
-      wrongShape: false,
-      slow: false,
-    }
-    // A slow request is held until the scenario ends, then released.
-    let releaseSlow: () => void = () => {}
-    const slowDone = new Promise<void>((resolve) => {
-      releaseSlow = resolve
-    })
-    await page.route('**/api/languages', async (route) => {
-      if (api.slow) {
-        await slowDone
-        await route.abort().catch(() => {})
-        return
+  // auto: true installs the fake backend in every scenario, even one whose steps never
+  // mention it, so no test can reach a real API by accident.
+  fakeApi: [
+    async ({ page }, use) => {
+      const api: FakeApi = {
+        languages: [EXAMPLISH, SAMPLESE],
+        failuresLeft: 0,
+        opening: { text: 'Default opening', translation: null },
+        reply: { text: 'Default reply', translation: null },
+        feedback: [],
+        turnFailuresLeft: 0,
+        startFailuresLeft: 0,
+        slowStart: false,
+        slowReply: false,
+        receivedMessages: [],
+        wrongShape: false,
+        slow: false,
       }
-      if (api.failuresLeft > 0) {
-        api.failuresLeft -= 1
-        await route.fulfill({ status: 500, body: 'fake failure' })
-        return
-      }
-      if (api.wrongShape) {
-        await route.fulfill({ json: [{ code: 'xx', levels: 'not a list' }] })
-        return
-      }
-      await route.fulfill({ json: api.languages })
-    })
-    await use(api)
-    releaseSlow()
-  },
+      // A slow request is held until the scenario ends, then released.
+      let releaseSlow: () => void = () => {}
+      const slowDone = new Promise<void>((resolve) => {
+        releaseSlow = resolve
+      })
+      let conversationCount = 0
+      await page.route('**/api/languages', async (route) => {
+        if (api.slow) {
+          await slowDone
+          await route.abort().catch(() => {})
+          return
+        }
+        if (api.failuresLeft > 0) {
+          api.failuresLeft -= 1
+          await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        if (api.wrongShape) {
+          await route.fulfill({ json: [{ code: 'xx', levels: 'not a list' }] })
+          return
+        }
+        await route.fulfill({ json: api.languages })
+      })
+      await page.route('**/api/conversations', async (route) => {
+        if (api.slowStart) {
+          await slowDone
+          await route.abort().catch(() => {})
+          return
+        }
+        if (api.startFailuresLeft > 0) {
+          api.startFailuresLeft -= 1
+          await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        conversationCount += 1
+        await route.fulfill({
+          status: 201,
+          json: { id: `c-${conversationCount}`, opening: api.opening },
+        })
+      })
+      await page.route('**/api/conversations/*/turns', async (route) => {
+        const body = route.request().postDataJSON() as { message: string }
+        api.receivedMessages.push(body.message)
+        // Failures come first, so "fail once" and "slow" combine: the first turn fails at once,
+        // the next ones hang.
+        if (api.turnFailuresLeft > 0) {
+          api.turnFailuresLeft -= 1
+          await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        if (api.slowReply) {
+          await slowDone
+          await route.abort().catch(() => {})
+          return
+        }
+        await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })
+      })
+      await use(api)
+      releaseSlow()
+    },
+    { auto: true },
+  ],
 })
 
 export const { Given, When, Then } = createBdd(test)
