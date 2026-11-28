@@ -60,9 +60,10 @@ Done badge).
   scenarios done" count. A stretch section still shows when there are next-level scenarios.
 - Picking a card (or "Free conversation") goes back to `/conversation` and starts a new conversation
   with that scenario (or none). A conversation already in progress is replaced: its messages are
-  cleared and are not kept. The choice is kept for that language and level while the app is open.
+  cleared and are not kept. The choice stays while the learner switches modes and the app is open.
 - Changing language or level clears the scenario. Changing the language also moves the learner to
   that language's easiest level (spec 002), so a level the new language does not have is never kept.
+  Going back to the earlier language or level does not bring the old scenario back.
 
 ## API contract
 
@@ -213,6 +214,14 @@ Feature: Scenario picker
     And the learner changes the level to "L2"
     Then the scenario chip reads "Free conversation · Choose a scenario"
 
+  Scenario: Going back to the earlier level does not bring the scenario back
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    And the learner picks the scenario "Cafe scene"
+    And the learner changes the level to "L2"
+    And the learner changes the level to "L1"
+    Then the scenario chip reads "Free conversation · Choose a scenario"
+
   Scenario: Changing the language clears the scenario
     When the learner opens Conversation
     And the learner opens the scenario page
@@ -294,7 +303,10 @@ Backend criteria (pytest, `backend/tests/test_scenarios.py`):
 
 Component tests (Vitest): loading and failure states; the stretch section is left out with no other-level
 scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes;
-only the next level up is shown as a stretch.
+only the next level up is shown as a stretch; the tablet layout has 2 columns; a done card shows
+"Practise again" and a not-done card its topics; the stretch section carries its note "A step up. The
+tutor keeps its replies simple and gives more hints."; "← Back to conversation" goes to
+`/conversation`.
 
 ## Non-behavioural criteria
 
