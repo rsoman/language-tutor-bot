@@ -133,6 +133,7 @@ Feature: Word help
     Given the learner uses a phone-sized screen
     When the learner opens word help
     Then the word help panel spans the width of the screen
+    And the word help panel sits just above the tab bar
 
   Scenario: The close button closes word help
     When the learner opens word help
@@ -196,6 +197,12 @@ Feature: Word help
     When the learner opens word help
     And the learner looks up "   "
     Then no word lookup was sent
+
+  Scenario: Spaces around a word are trimmed before the lookup
+    When the learner opens word help
+    And the learner looks up "  coffee  "
+    Then the word lookup sent was "coffee"
+    And the word help shows "the-coffee"
 
   Scenario: A slow answer for an earlier word is ignored
     Given the dictionary knows "tea" as "the-tea", a "noun" with "gender" "neuter" and "plural" "the-teas"
