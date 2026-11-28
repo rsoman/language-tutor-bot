@@ -4,7 +4,9 @@
 - **Owner:** Claude-generated (frontend, Pydantic models, routers that answer 501). Scenario content,
   recommendations and progress are hand-written by Ravi.
 - **Phase:** 1
-- **Builds on:** spec 004 (PR #5)
+- **Builds on:** spec 004, word help (spec-only PR #17, not merged yet; code in PR #5), and
+  spec 003's `ConversationIn` (spec-only PR #16, not merged yet). Specs 003 and 004 merge before
+  this one.
 
 ## Goal
 
@@ -52,11 +54,15 @@ Done badge).
   scenarios" lists every scenario at the learner's level (recommended ones too). "Stretch · <level>"
   lists scenarios at the next level up only, by the levels' `rank` (spec 002). The client drops
   scenarios at any other level, so a lower level is never called a stretch. The section is left out
-  when there are none. The stretch level
-  name comes from the scenarios, never from a level system.
+  when there are none. The stretch level name comes from the scenarios, never from a level system.
+- With no scenarios at the learner's level, the page shows "No scenarios for <level> yet." in place
+  of "Recommended next" and "All <level> scenarios", and hides the "<done> of <total> <level>
+  scenarios done" count. A stretch section still shows when there are next-level scenarios.
 - Picking a card (or "Free conversation") goes back to `/conversation` and starts a new conversation
-  with that scenario (or none). The choice is kept for that language and level while the app is open.
-- Changing language or level clears the scenario.
+  with that scenario (or none). A conversation already in progress is replaced: its messages are
+  cleared and are not kept. The choice is kept for that language and level while the app is open.
+- Changing language or level clears the scenario. Changing the language also moves the learner to
+  that language's easiest level (spec 002), so a level the new language does not have is never kept.
 
 ## API contract
 
@@ -212,7 +218,24 @@ Feature: Scenario picker
     And the learner opens the scenario page
     And the learner picks the scenario "Cafe scene"
     And the learner changes the language to "Samplese"
-    Then the scenario chip reads "Free conversation · Choose a scenario"
+    Then the level "S1" is selected
+    And the scenario chip reads "Free conversation · Choose a scenario"
+
+  Scenario: With only stretch scenarios the page shows them under the empty message
+    Given the scenarios on offer are only at "L2"
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page shows "No scenarios for L1 yet."
+    And the section "Stretch · L2" lists "Doctor scene"
+
+  Scenario: Picking a scenario mid-conversation replaces the conversation
+    Given the tutor will reply "Reply line"
+    When the learner opens Conversation
+    And the learner sends "Hello there"
+    And the learner opens the scenario page
+    And the learner picks the scenario "Cafe scene"
+    Then the chat does not show "Hello there"
+    And the conversation was started with scenario "s-cafe"
 
   Scenario: The learner sees that scenarios are loading
     Given the scenarios request is slow
