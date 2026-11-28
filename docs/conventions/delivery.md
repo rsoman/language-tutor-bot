@@ -31,7 +31,12 @@ compaction loses detail that then gets re-read.
 - **N** About 400 changed lines at most, not counting generated files and lockfiles. Bigger needs a
   reason in the PR or a split.
 - **B** Fill in `.github/pull_request_template.md`, including red evidence and, for UI changes,
-  before and after screenshots.
+  a link to the screenshots.
+- **B** Screenshots are not committed. The frontend CI job takes Playwright screenshots of the
+  changed screens at the three D0004 breakpoints and uploads them as a run artifact (a zip). The PR
+  links to the run for "after" and to the latest `main` run for "before" (none for a new screen).
+  GitHub deletes artifacts after 90 days by default, so the screenshots are review evidence only,
+  not a record.
 
 ## Verify before push (B)
 
@@ -52,7 +57,7 @@ Pipelines are listed in `testing.md`. Workflows live in `.github/workflows/`:
 
 - `ci.yml`: sanity checks on every PR, regression on `main`.
 - `codeql.yml`: static analysis.
-- `review.yml`: the reviewer agent (`review.md`).
+- `review.yml`: the reviewer agent (`review.md`), on open, ready for review, and the `re-review` label.
 
 ## Deployment
 

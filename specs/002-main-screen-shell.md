@@ -77,11 +77,15 @@ The app name comes from one config value (`src/config.ts`, `appName`). No compon
   `name`, with `native_name` under it) and Level (that language's `levels`, labelled with its
   `level_system`, for example "Level (TEST)"). Levels are listed easiest first, by their `rank`
   from the API, never by name and never by the order the API sends them. Picking a language
-  selects its easiest level, which the learner can change; a language with one level therefore
-  has that level selected. A "Done" button and the Escape key close it and return
-  focus to the pill. While it is open, Tab and Shift+Tab stay inside it.
+  selects that language's current level: the level the learner last chose for it. A language the
+  learner has not chosen before, or whose saved level it no longer offers, starts at its easiest
+  level; a language with one level therefore has that level selected. The learner can change it.
+  A "Done" button and the Escape key close it and return focus to the pill. While it is open, Tab
+  and Shift+Tab stay inside it.
 - Once picked, the pill reads `<name> · <level>` on tablet and desktop and
-  `<CODE> · <level>` on mobile. The choice is saved in `localStorage` and restored on reload.
+  `<CODE> · <level>` on mobile. The choice is saved in `localStorage` and restored on reload,
+  together with the current level of each language the learner has chosen. A choice saved in the
+  earlier shape (one language and its level, no per-language levels) is still read.
   A saved code that `GET /languages` no longer returns is ignored (the learner picks again), and so
   is a saved value that is not valid JSON.
 - If `GET /languages` returns an empty list, the prompt says "No languages are available yet."
@@ -190,6 +194,24 @@ Feature: Main screen shell
     Then the level group is labelled "Level (TEST)"
     And the levels offered are "L1, L2"
 
+  Scenario: Switching back to a language keeps its current level
+    Given the learner has chosen "Examplish" at level "L2"
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Samplese"
+    And the learner picks the language "Examplish"
+    Then the level "L2" is selected
+
+  Scenario: Each language's current level is remembered after a reload
+    Given the learner has chosen "Examplish" at level "L2"
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Samplese"
+    And the learner reloads the app
+    And the learner opens the language picker
+    And the learner picks the language "Examplish"
+    Then the level "L2" is selected
+
   Scenario: The chosen language is remembered after a reload
     Given the learner has chosen "Examplish" at level "L1"
     When the learner reloads the app
@@ -229,6 +251,11 @@ Feature: Main screen shell
     Given the learner has not chosen a language
     When the learner opens the app at "/no-such-page"
     Then the address ends with "/conversation"
+
+  Scenario: A saved level the language no longer offers falls back to its easiest level
+    Given the learner has chosen "Examplish" at level "L9"
+    When the learner opens the app
+    Then the language button reads "Examplish · L1"
 
   Scenario: A saved language that is no longer offered is ignored
     Given the learner has chosen "Examplish" at level "L1"
@@ -327,7 +354,8 @@ Backend unit tests (pytest, `backend/tests/test_languages.py`):
 - [ ] A `LanguageProfile` with no levels is rejected.
 
 Component and unit tests (Vitest) cover what would make the feature file noisy: the picker's
-keyboard behaviour, the `localStorage` read and write helpers, the loading state, and that the logo SVG has no hard-coded hex.
+keyboard behaviour, the `localStorage` read and write helpers (including reading a choice saved
+in the earlier shape), the loading state, and that the logo SVG has no hard-coded hex.
 
 ## Non-behavioural criteria
 
@@ -357,8 +385,11 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
   - **Language choice kept in `localStorage`** until accounts exist (then it moves to the user
     profile, and this storage is removed).
   - **Fonts self-hosted** with `@fontsource` packages, so the app makes no third-party font requests.
-  - **Picking a language selects its easiest level.** This is not a default language; it saves a
-    click, and with a single level it is the only choice.
+  - **Picking a language selects its current level** (owner's review, 2026-11-28; replaces "selects
+    its easiest level"). Until accounts and progress exist, the current level is the one the learner
+    last chose for that language, kept in `localStorage`. Once the backend tracks progress (for
+    example the learner cleared L1 and is on L2), the current level comes from there. A language
+    never chosen starts at its easiest level. This is not a default language.
   - **Levels carry an explicit `rank`** (owner's review, 2026-11-28) instead of relying on list
     order, and the frontend sorts by it, never alphabetically.
 
