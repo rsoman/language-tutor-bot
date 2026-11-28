@@ -17,6 +17,10 @@ class LevelSystem:
     name: str  # e.g. "CEFR"
     levels: tuple[str, ...]  # all levels, easiest first
 
+    def rank(self, level: str) -> int:
+        """The level's difficulty rank: its position in this system, 1 for the easiest."""
+        return self.levels.index(level) + 1
+
 
 CEFR = LevelSystem(name="CEFR", levels=("A1", "A2", "B1", "B2", "C1", "C2"))
 
@@ -34,6 +38,13 @@ class LanguageProfile:
         if unknown:
             raise ValueError(
                 f"Levels {unknown} are not part of {self.level_system.name} for {self.code!r}"
+            )
+        if not self.levels:
+            raise ValueError(f"{self.code!r} needs at least one level")
+        ranks = [self.level_system.rank(level) for level in self.levels]
+        if ranks != sorted(ranks):
+            raise ValueError(
+                f"Levels for {self.code!r} must follow {self.level_system.name}, easiest first"
             )
 
 
