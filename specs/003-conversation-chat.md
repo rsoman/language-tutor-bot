@@ -18,7 +18,7 @@ only as a typed contract that answers 501 until Ravi writes the logic.
 ## Out of scope
 
 - The tutor's logic: prompts, LLM calls, deciding what feedback to give. Hand-written by Ravi.
-- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005. The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 - Word help (the lightbulb popover): spec 004.
 - Scenarios (the "Scenario: … · Change" chip and the picker): spec 005. Conversations here have no scenario.
 - Streaming replies token by token. A reply arrives whole. Streaming can be a later spec once the
