@@ -1,6 +1,6 @@
 # NNN: Feature name
 
-- **Status:** draft | ready | done
+- **Status:** draft | approved | done
 - **Owner:** Claude-generated | hand-written
 - **Phase:** 0 | 1 | 2 | 3 | 4
 
@@ -16,21 +16,35 @@ What this spec deliberately does not cover.
 
 Endpoints, request/response schemas, error cases.
 
-## Acceptance criteria
+## Test scenarios
 
-Write each criterion as a Gherkin scenario. Each one becomes a scenario in
+Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
+Write each scenario in Gherkin. Each one becomes a scenario in
 `backend/tests/features/NNN-name.feature` (or the frontend equivalent), with the same wording.
+Tag the main happy path `@smoke`.
+
+### Positive
 
 ```gherkin
+@smoke
 Scenario: Short name of the behaviour
   Given some starting state
   When the learner or client does something
   Then this observable result happens
 ```
 
-Non-behavioural criteria (lint, types, CI) go here as checkboxes:
+### Negative
 
-- [ ] `ruff`, `pyright` and `pytest` pass in CI.
+Invalid input, missing auth (401), another user's data (403), upstream failure.
+
+### Edge cases
+
+Empty, longest allowed, boundary values, slow or repeated actions.
+
+## Non-behavioural criteria
+
+- [ ] Lint, format, types, build and tests pass in CI.
+- [ ] At least 80% of changed lines covered.
 
 ## Decisions
 
