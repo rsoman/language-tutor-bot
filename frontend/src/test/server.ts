@@ -6,6 +6,19 @@ import { setupServer } from 'msw/node'
 
 import { EXAMPLISH, SAMPLESE } from './fakeLanguages'
 
+export const fakeScenarios = [
+  {
+    id: 's-1',
+    title: 'Scene one',
+    native_title: 'Scene one native',
+    topics: 'Topic one',
+    level: 'L1',
+    recommended: true,
+    done: false,
+    last_result: null,
+  },
+]
+
 export const server = setupServer(
   http.get('*/api/languages', () => HttpResponse.json([EXAMPLISH, SAMPLESE])),
   http.post('*/api/conversations', () =>
@@ -14,6 +27,7 @@ export const server = setupServer(
       { status: 201 },
     ),
   ),
+  http.get('*/api/scenarios', () => HttpResponse.json(fakeScenarios)),
   http.post('*/api/conversations/:id/turns', () =>
     HttpResponse.json({ feedback: [], reply: { text: 'Fake reply', translation: null } }),
   ),

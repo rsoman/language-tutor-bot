@@ -37,7 +37,8 @@ export const LanguagesLanguagesGetResponse = zod.array(LanguagesLanguagesGetResp
  */
 export const StartConversationConversationsPostBody = zod.object({
   "language": zod.string().describe('Language code from GET /languages, e.g. \'xx\''),
-  "level": zod.string().describe('One of that language\'s levels')
+  "level": zod.string().describe('One of that language\'s levels'),
+  "scenario_id": zod.union([zod.string(),zod.null()]).optional().describe('A scenario id from GET /scenarios; none for free conversation')
 }).describe('Starts a conversation in one language at one of its levels.')
 
 export const StartConversationConversationsPostResponse = zod.unknown()
@@ -79,3 +80,25 @@ export const LookupWordWordsLookupGetQueryParams = zod.object({
 })
 
 export const LookupWordWordsLookupGetResponse = zod.unknown()
+
+
+/**
+ * Scenarios at the learner's level, plus stretch scenarios at another level.
+ * @summary List Scenarios
+ */
+export const ListScenariosScenariosGetQueryParams = zod.object({
+  "language": zod.string().describe('Language code from GET /languages, e.g. \'xx\''),
+  "level": zod.string().describe('One of that language\'s levels')
+})
+
+export const ListScenariosScenariosGetResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string().describe('Title in the learner\'s own language'),
+  "native_title": zod.string().describe('Title in the target language'),
+  "topics": zod.string().describe('What the scenario practises, one short line'),
+  "level": zod.string().describe('One of the language\'s levels'),
+  "recommended": zod.boolean(),
+  "done": zod.boolean(),
+  "last_result": zod.union([zod.string(),zod.null()]).optional().describe('e.g. \'Last time: 2 corrections\'')
+}).describe('One scenario. The client groups the flat list into sections.')
+export const ListScenariosScenariosGetResponse = zod.array(ListScenariosScenariosGetResponseItem)

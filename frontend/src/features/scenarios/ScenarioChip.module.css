@@ -1,0 +1,24 @@
+.chip {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  max-width: 100%;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.chip:hover .action {
+  text-decoration: underline;
+}
+
+.action {
+  margin-left: 0.25em;
+  color: var(--color-primary);
+  font-weight: 700;
+}

@@ -145,3 +145,52 @@ for (const screen of screens) {
     expect(results.violations).toEqual([])
   })
 }
+
+// Spec 005: one recommended, one done and one stretch scenario, so every card style is checked.
+const fakeScenarios = [
+  {
+    id: 's-1',
+    title: 'Scene one',
+    native_title: 'Scene one native',
+    topics: 'Topic one',
+    level: 'L1',
+    recommended: true,
+    done: false,
+    last_result: null,
+  },
+  {
+    id: 's-2',
+    title: 'Scene two',
+    native_title: 'Scene two native',
+    topics: 'Topic two',
+    level: 'L1',
+    recommended: false,
+    done: true,
+    last_result: 'Last time: 1 correction',
+  },
+  {
+    id: 's-3',
+    title: 'Scene three',
+    native_title: 'Scene three native',
+    topics: 'Topic three',
+    level: 'L2',
+    recommended: false,
+    done: false,
+    last_result: null,
+  },
+]
+
+for (const screen of screens) {
+  test(`the scenario page has no axe violations on ${screen.name}`, async ({ page }) => {
+    await page.route('**/api/languages', (route) => route.fulfill({ json: fakeLanguages }))
+    await page.route('**/api/scenarios?*', (route) => route.fulfill({ json: fakeScenarios }))
+    await page.setViewportSize({ width: screen.width, height: screen.height })
+    await page.addInitScript(() =>
+      localStorage.setItem('vaikhari.languageChoice', JSON.stringify({ code: 'qaa', level: 'L1' })),
+    )
+    await page.goto('/conversation/scenarios')
+    await expect(page.getByRole('region', { name: 'Stretch · L2' })).toBeVisible()
+    const results = await new AxeBuilder({ page }).analyze()
+    expect(results.violations).toEqual([])
+  })
+}

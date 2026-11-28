@@ -6,13 +6,17 @@
 // until the owner's backend models exist.
 import type { z } from 'zod'
 
-import { LanguagesLanguagesGetResponse } from './generated/schemas'
+import {
+  LanguagesLanguagesGetResponse,
+  ListScenariosScenariosGetResponse,
+} from './generated/schemas'
 import type { Conversation, Turn, Word } from './tutorTypes'
 
 export type { Conversation, Feedback, Segment, TutorMessage, Turn, Word } from './tutorTypes'
 
 export type Language = z.infer<typeof LanguagesLanguagesGetResponse>[number]
 export type Level = Language['levels'][number]
+export type Scenario = z.infer<typeof ListScenariosScenariosGetResponse>[number]
 
 /** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
 export class ApiError extends Error {
@@ -53,8 +57,12 @@ export async function fetchLanguages(): Promise<Language[]> {
   return LanguagesLanguagesGetResponse.parse(await getJson('/languages'))
 }
 
-export function startConversation(language: string, level: string): Promise<Conversation> {
-  return postJson<Conversation>('/conversations', { language, level })
+export function startConversation(
+  language: string,
+  level: string,
+  scenarioId: string | null = null,
+): Promise<Conversation> {
+  return postJson<Conversation>('/conversations', { language, level, scenario_id: scenarioId })
 }
 
 export function sendTurn(conversationId: string, message: string): Promise<Turn> {
@@ -65,4 +73,9 @@ export async function lookupWord(language: string, level: string, query: string)
   const params = new URLSearchParams({ language, level, query })
   // Word is the owner's hand-written shape until his model lands (react.md exception).
   return (await getJson(`/words/lookup?${params.toString()}`)) as Word
+}
+
+export async function fetchScenarios(language: string, level: string): Promise<Scenario[]> {
+  const params = new URLSearchParams({ language, level })
+  return ListScenariosScenariosGetResponse.parse(await getJson(`/scenarios?${params.toString()}`))
 }
