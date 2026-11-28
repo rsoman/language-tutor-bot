@@ -11,7 +11,13 @@ const screens = [
 const modes = ['/conversation', '/grammar', '/vocabulary']
 
 const fakeLanguages = [
-  { code: 'xx', name: 'Examplish', native_name: 'Exemplar', level_system: 'TEST', levels: ['L1'] },
+  {
+    code: 'xx',
+    name: 'Examplish',
+    native_name: 'Exemplar',
+    level_system: 'TEST',
+    levels: [{ code: 'L1', rank: 1 }],
+  },
 ]
 
 for (const screen of screens) {
