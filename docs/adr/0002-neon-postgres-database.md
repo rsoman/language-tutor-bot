@@ -37,7 +37,11 @@ Use Neon Postgres, with pgvector, for application data and RAG embeddings. Chose
 ## Consequences
 
 - One store for relational data and vectors; SQL and schema design are part of the learning.
-- Each PR can get its own database branch for tests.
+- Two Neon projects, one per environment: `vaikhari-dev` (its `main` branch is the dev database,
+  plus a short-lived branch per PR) and `vaikhari-prod` (only `main`). Each project has its own
+  credentials, compute allowance and Neon Auth users, so dev work can neither read prod data nor use
+  up prod's free compute hours. Migrations run against each project separately. Check the free
+  plan's project limit when setting up.
 - "Everything on AWS" no longer holds. The app runs on AWS and calls Neon over the internet. Pick a
   Neon region close to the app's AWS region.
 - Services reach the database only through repository interfaces (architecture guide), so moving to
