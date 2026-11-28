@@ -20,7 +20,10 @@ shell is the first thing that needs it.
 - Login, sign-up and user profiles. The chosen language is kept in the browser only (see
   Decisions), until accounts exist.
 - Theme switching. Only the fig palette is built; the alternatives stay on the canvas.
-- Any LLM call. The only backend call is the existing `GET /languages`.
+- Any LLM call. The only backend call is `GET /languages`.
+- Locking higher levels until the lower ones are done. That needs the learner's progress (the
+  owner's part) and accounts, so it is left for a later spec. Until then every level is open; the
+  rank added here is what such a lock would use.
 - Deploying to S3 and CloudFront (SPA fallback routing is a deploy concern, later).
 
 ## Design source
@@ -72,8 +75,10 @@ The app name comes from one config value (`src/config.ts`, `appName`). No compon
   opens the picker.
 - The picker is a popover from the pill with two radio groups: Language (each language's
   `name`, with `native_name` under it) and Level (that language's `levels`, labelled with its
-  `level_system`, for example "Level (TEST)"). Picking a language selects its first listed
-  level, which the learner can change. A "Done" button and the Escape key close it and return
+  `level_system`, for example "Level (TEST)"). Levels are listed easiest first, by their `rank`
+  from the API, never by name and never by the order the API sends them. Picking a language
+  selects its easiest level, which the learner can change; a language with one level therefore
+  has that level selected. A "Done" button and the Escape key close it and return
   focus to the pill. While it is open, Tab and Shift+Tab stay inside it.
 - Once picked, the pill reads `<name> · <level>` on tablet and desktop and
   `<CODE> · <level>` on mobile. The choice is saved in `localStorage` and restored on reload.
@@ -90,15 +95,27 @@ Each mode panel has its mode name as a heading and one line saying what will com
 
 ## API contract
 
-Uses the existing endpoint. No backend change.
+Changes the existing endpoint: each level becomes an object with a difficulty `rank`, so the
+order is explicit instead of implied by list position.
 
 `GET /languages` response `200`:
 
 ```json
 [
-  { "code": "xx", "name": "Examplish", "native_name": "Exemplar", "level_system": "TEST", "levels": ["L1", "L2"] }
+  {
+    "code": "xx", "name": "Examplish", "native_name": "Exemplar", "level_system": "TEST",
+    "levels": [{ "code": "L1", "rank": 1 }, { "code": "L2", "rank": 2 }]
+  }
 ]
 ```
+
+- `rank` is a whole number, 1 for the easiest level of the level system. The backend takes it from
+  the level's position in its `LevelSystem` (easiest first), so a language that offers only some
+  levels keeps their system ranks (for example ranks 1 and 3). Ranks are unique within a language.
+- The backend sends each language's levels easiest first, but the frontend sorts by `rank` anyway.
+- `LanguageProfile` rejects levels listed out of their level system's order, so the registry
+  cannot contradict the ranks.
+- Requests elsewhere (specs 003 to 006) still send a level as its `code` string.
 
 In development, Vite proxies `/api/*` to `http://127.0.0.1:8000/*`, so the backend needs no CORS
 change. Tests never call the backend: Vitest uses MSW, Playwright uses `page.route`. Test data
@@ -109,8 +126,8 @@ uses made-up languages (`xx`, `yy`) and made-up level systems, so no test depend
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
 
 Each scenario becomes one scenario in `frontend/e2e/features/002-main-screen-shell.feature`,
-with the same wording. The fake API offers "Examplish" (`xx`, levels L1, L2) and "Samplese"
-(`yy`, levels S1) unless a scenario says otherwise.
+with the same wording. The fake API offers "Examplish" (`xx`, levels L1 rank 1, L2 rank 2) and
+"Samplese" (`yy`, level S1 rank 1) unless a scenario says otherwise.
 
 Shared setup:
 
@@ -157,6 +174,13 @@ Feature: Main screen shell
     And the learner opens the language picker
     And the learner picks the language "Samplese"
     Then the level "S1" is selected
+
+  Scenario: A language with several levels starts at its easiest level
+    Given the learner has not chosen a language
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Examplish"
+    Then the level "L1" is selected
 
   Scenario: The level list belongs to the chosen language
     Given the learner has not chosen a language
@@ -256,9 +280,51 @@ Feature: Main screen shell
     And the learner opens the language picker
     And the learner presses Tab from the "Done" button
     Then keyboard focus is inside the language picker
+
+  Scenario: Levels are listed easiest first whatever order the API sends
+    Given the learner has not chosen a language
+    And the API sends the levels of "Examplish" in the order "L2, L1"
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Examplish"
+    Then the levels offered are "L1, L2"
+    And the level "L1" is selected
+
+  Scenario: Levels are ordered by difficulty, not by name
+    Given the learner has not chosen a language
+    And the API offers "Ordish" with level "Zed" at rank 1 and level "Alpha" at rank 2
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Ordish"
+    Then the levels offered are "Zed, Alpha"
+    And the level "Zed" is selected
+```
+
+### API (backend)
+
+These go in `backend/tests/features/002-main-screen-shell.feature` (pytest-bdd). The steps read the
+language registry, so no real language is named.
+
+```gherkin
+Feature: Languages API contract
+
+  Scenario: Every level carries its difficulty rank
+    When a client lists the languages
+    Then every level has a code and a whole-number rank of 1 or more
+    And no two levels of one language share a rank
+
+  Scenario: Levels come easiest first
+    When a client lists the languages
+    Then each language's levels are in rising rank order
 ```
 
 ### Below the UI: backend and component tests
+
+Backend unit tests (pytest, `backend/tests/test_languages.py`):
+
+- [ ] A level's rank is its position in its level system, counted from 1.
+- [ ] A `LanguageProfile` whose levels are out of their level system's order is rejected.
+- [ ] A `LanguageProfile` with no levels is rejected.
 
 Component and unit tests (Vitest) cover what would make the feature file noisy: the picker's
 keyboard behaviour, the `localStorage` read and write helpers, the loading state, and that the logo SVG has no hard-coded hex.
@@ -289,13 +355,13 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
   - **Language choice kept in `localStorage`** until accounts exist (then it moves to the user
     profile, and this storage is removed).
   - **Fonts self-hosted** with `@fontsource` packages, so the app makes no third-party font requests.
-  - **Picking a language selects its first listed level.** This is not a default language; it
-    only saves a click when a language has a single level.
+  - **Picking a language selects its easiest level.** This is not a default language; it saves a
+    click, and with a single level it is the only choice.
+  - **Levels carry an explicit `rank`** (owner's review, 2026-11-28) instead of relying on list
+    order, and the frontend sorts by it, never alphabetically.
 
 ## Notes
 
-- Every language offers at least one level. That is a data rule for `languages.py`, so the
-  picker does not handle a language without levels.
 - Folder layout: `src/app/` (router, layout, header), `src/features/language/` (picker, hook,
   storage), `src/features/modes/` (mode tabs and placeholders), `src/components/` (Logo),
   `src/api/` (generated schema and a small fetch client), `e2e/features/` and `e2e/steps/`.
