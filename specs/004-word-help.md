@@ -20,7 +20,7 @@ inserts the word into the message. On phones it opens as a bottom sheet.
 - Several matches for one query. The API returns one best match or none.
 - Adding the looked-up word to drills (later, with vocabulary specs).
 - Word help outside Conversation (for example in tests). Only the composer has it.
-- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005. The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 
 ## Design source
 
