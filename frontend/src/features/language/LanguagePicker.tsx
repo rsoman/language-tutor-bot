@@ -37,11 +37,12 @@ export function LanguagePicker() {
     wasOpen.current = pickerOpen
   }, [pickerOpen])
 
-  // While the popover is open, Escape closes it.
+  // While the popover is open, Escape closes it, and Tab and Shift+Tab stay inside it.
   useEffect(() => {
     if (!pickerOpen) return
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') closePicker()
+      if (event.key === 'Tab' && dialogRef.current) keepFocusInside(dialogRef.current, event)
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -107,15 +108,15 @@ export function LanguagePicker() {
               <legend className={styles.legend}>Level ({choice.language.level_system})</legend>
               <div className={styles.levels}>
                 {choice.language.levels.map((level) => (
-                  <label key={level} className={styles.levelLabel}>
+                  <label key={level.code} className={styles.levelLabel}>
                     <input
                       type="radio"
                       name="level"
-                      value={level}
-                      checked={choice.level === level}
-                      onChange={() => chooseLevel(level)}
+                      value={level.code}
+                      checked={choice.level === level.code}
+                      onChange={() => chooseLevel(level.code)}
                     />
-                    {level}
+                    {level.code}
                   </label>
                 ))}
               </div>
@@ -129,6 +130,43 @@ export function LanguagePicker() {
       )}
     </div>
   )
+}
+
+/**
+ * Wraps Tab from the last control to the first, and Shift+Tab from the first to the last.
+ * A radio group is one Tab stop, so only the checked radio (or the first, if none is
+ * checked) of each group counts.
+ */
+function keepFocusInside(dialog: HTMLElement, event: KeyboardEvent) {
+  const stops = tabStops(dialog)
+  const first = stops[0]
+  const last = stops[stops.length - 1]
+  if (!first || !last) return
+  const active = document.activeElement
+  if (!event.shiftKey && (active === last || !dialog.contains(active))) {
+    event.preventDefault()
+    first.focus()
+  } else if (event.shiftKey && (active === first || !dialog.contains(active))) {
+    event.preventDefault()
+    last.focus()
+  }
+}
+
+function tabStops(dialog: HTMLElement): HTMLElement[] {
+  const stops: HTMLElement[] = []
+  const seenGroups = new Set<string>()
+  for (const element of dialog.querySelectorAll<HTMLElement>('input, button')) {
+    if (element instanceof HTMLInputElement && element.type === 'radio') {
+      if (seenGroups.has(element.name)) continue
+      const group = dialog.querySelectorAll<HTMLInputElement>(`input[name="${element.name}"]`)
+      const checked = Array.from(group).find((radio) => radio.checked)
+      seenGroups.add(element.name)
+      stops.push(checked ?? element)
+    } else {
+      stops.push(element)
+    }
+  }
+  return stops
 }
 
 /** What the pill says. On phones it shows the language code instead of the name (CSS). */

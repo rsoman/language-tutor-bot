@@ -1,9 +1,13 @@
-// A small typed wrapper around fetch() for the backend API.
-// The types come from schema.d.ts, which is generated from the backend's OpenAPI schema
-// (run `bash scripts/export-openapi.sh`). Never edit schema.d.ts by hand.
-import type { components } from './schema'
+// A small fetch wrapper for the backend API.
+// The Zod schemas in generated/schemas.ts come from the backend's OpenAPI schema
+// (`pnpm gen:api`, ADR 0004). Never edit them by hand. Every response is parsed with its
+// schema, so a response with the wrong shape fails like any other failed request.
+import type { z } from 'zod'
 
-export type Language = components['schemas']['LanguageOut']
+import { LanguagesLanguagesGetResponse } from './generated/schemas'
+
+export type Language = z.infer<typeof LanguagesLanguagesGetResponse>[number]
+export type Level = Language['levels'][number]
 
 // In development Vite forwards /api/* to the FastAPI app (see vite.config.ts).
 function apiUrl(path: string): string {
@@ -15,5 +19,5 @@ export async function fetchLanguages(): Promise<Language[]> {
   if (!response.ok) {
     throw new Error(`GET /languages failed with status ${response.status}`)
   }
-  return (await response.json()) as Language[]
+  return LanguagesLanguagesGetResponse.parse(await response.json())
 }

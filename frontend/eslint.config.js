@@ -7,7 +7,14 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'playwright-report', 'test-results', '.features-gen', 'src/api/schema.d.ts'],
+    ignores: [
+      'dist',
+      'screenshots',
+      'playwright-report',
+      'test-results',
+      '.features-gen',
+      'src/api/generated',
+    ],
   },
   {
     files: ['**/*.{ts,tsx}'],

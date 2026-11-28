@@ -60,6 +60,14 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - name: Install
         run: pnpm install --frozen-lockfile
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: API schemas match the backend (ADR 0004)
+        # Regenerates openapi.json and the Zod schemas; fails if the committed copies differ.
+        run: |
+          bash scripts/export-openapi.sh
+          git diff --exit-code -- openapi.json src/api/generated
       - name: Audit dependencies
         run: pnpm audit --audit-level high
       - name: Lint
@@ -72,3 +80,12 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Acceptance tests (Playwright BDD)
         run: pnpm e2e
+      - name: Upload screenshots for review (delivery.md)
+        # The screenshots project saves each mode at the three D0004 breakpoints. Never committed.
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: frontend/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
