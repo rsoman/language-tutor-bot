@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Verify before push (docs/conventions/delivery.md). Turn on once per clone:
+#   git config core.hooksPath .githooks
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+cd "$root"
+
+# Files changed compared with main (falls back to the last commit on a fresh clone).
+base="$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD~1)"
+changed="$(git diff --name-only "$base"...HEAD)"
+
+echo "pre-push: checking for conflict markers"
+if git grep -nE '^(<{7}|>{7})( |$)|^={7}$' -- ':!*.lock' ':!pnpm-lock.yaml'; then
+  echo "pre-push: conflict markers found, push stopped" >&2
+  exit 1
+fi
+
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-push: gitleaks"
+  gitleaks git --log-opts="$base..HEAD" --no-banner
+else
+  echo "pre-push: gitleaks not installed, skipping (CI still runs it)"
+fi
+
+if grep -q '^backend/' <<<"$changed"; then
+  echo "pre-push: backend checks"
+  (cd backend && uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run pytest)
+fi
+
+if grep -q '^frontend/' <<<"$changed" && [ -f frontend/package.json ]; then
+  echo "pre-push: frontend checks"
+  (cd frontend && pnpm lint && pnpm typecheck && pnpm test)
+fi
+
+echo "pre-push: all checks passed"
