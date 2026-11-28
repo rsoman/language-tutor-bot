@@ -42,7 +42,8 @@ class LanguageProfile:
         if not self.levels:
             raise ValueError(f"{self.code!r} needs at least one level")
         ranks = [self.level_system.rank(level) for level in self.levels]
-        if ranks != sorted(ranks):
+        # Strictly rising: out of order or repeated levels would break unique ranks (spec 002).
+        if ranks != sorted(set(ranks)):
             raise ValueError(
                 f"Levels for {self.code!r} must follow {self.level_system.name}, easiest first"
             )

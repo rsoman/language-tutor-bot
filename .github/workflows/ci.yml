@@ -74,8 +74,8 @@ jobs:
         run: pnpm lint
       - name: Type check
         run: pnpm typecheck
-      - name: Unit and component tests
-        run: pnpm test
+      - name: Unit and component tests, with coverage (testing.md, coverage gate)
+        run: pnpm test:coverage
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
       - name: Acceptance tests (Playwright BDD)
