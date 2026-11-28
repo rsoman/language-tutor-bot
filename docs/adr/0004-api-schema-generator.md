@@ -38,5 +38,9 @@ stays our own small `fetch` wrapper, which parses every response with the genera
 - orval's client and MSW generators are not used yet. Turning either on later needs only a note in
   the PR, not a new ADR.
 - `react.md` gets a short orval section in the same PR (new-technology gate).
-- Not verified yet: that orval's Zod output handles our nullable fields and enums cleanly. Check it
-  in #3 before accepting this record; if it does not, fall back to option 2.
+- Checked on 2026-11-28 with a spike (orval 8.49.0, zod 4.6.7) against the backend's current
+  `openapi.json`: nullable fields become `z.union([..., z.null()])`, nested objects and the
+  `min`/`max` limits come through, and the owner's 501 routes become `z.unknown()` until their
+  response models exist. The output uses Zod 4 APIs (`z.int()`), so the frontend pins Zod 4.
+  Approving this record's PR accepts it; if a real schema later breaks the generator, fall back to
+  option 2 with a superseding record.
