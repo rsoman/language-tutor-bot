@@ -60,6 +60,14 @@ export type FakeApi = {
   feedback: FakeFeedback[]
   /** How many of the next turn requests should fail with a 500. */
   turnFailuresLeft: number
+  /** How many of the next POST /api/conversations requests should fail with a 500. */
+  startFailuresLeft: number
+  /** When true, POST /api/conversations does not answer until the scenario ends. */
+  slowStart: boolean
+  /** When true, turn requests do not answer until the scenario ends. */
+  slowReply: boolean
+  /** The message of every turn request the fake tutor received, oldest first. */
+  receivedMessages: string[]
   /** When true, /api/languages answers with JSON of the wrong shape. */
   wrongShape: boolean
   /** When true, /api/languages does not answer until the scenario ends. */
@@ -78,6 +86,10 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         reply: { text: 'Default reply', translation: null },
         feedback: [],
         turnFailuresLeft: 0,
+        startFailuresLeft: 0,
+        slowStart: false,
+        slowReply: false,
+        receivedMessages: [],
         wrongShape: false,
         slow: false,
       }
@@ -105,6 +117,16 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         await route.fulfill({ json: api.languages })
       })
       await page.route('**/api/conversations', async (route) => {
+        if (api.slowStart) {
+          await slowDone
+          await route.abort().catch(() => {})
+          return
+        }
+        if (api.startFailuresLeft > 0) {
+          api.startFailuresLeft -= 1
+          await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
         conversationCount += 1
         await route.fulfill({
           status: 201,
@@ -112,6 +134,13 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         })
       })
       await page.route('**/api/conversations/*/turns', async (route) => {
+        const body = route.request().postDataJSON() as { message: string }
+        api.receivedMessages.push(body.message)
+        if (api.slowReply) {
+          await slowDone
+          await route.abort().catch(() => {})
+          return
+        }
         if (api.turnFailuresLeft > 0) {
           api.turnFailuresLeft -= 1
           await route.fulfill({ status: 500, body: 'fake failure' })

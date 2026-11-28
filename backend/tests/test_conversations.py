@@ -64,3 +64,13 @@ def test_openapi_lists_the_request_models(client: TestClient) -> None:
     # The response models are the tutor's LLM output, written by the owner (spec 003).
     schemas = client.get("/openapi.json").json()["components"]["schemas"]
     assert {"ConversationIn", "TurnIn"} <= set(schemas)
+
+
+def test_turn_rejects_message_of_only_spaces(client: TestClient) -> None:
+    resp = client.post("/conversations/c-1/turns", json={"message": "     "})
+    assert resp.status_code == 422
+
+
+def test_turn_strips_surrounding_spaces_before_the_length_check(client: TestClient) -> None:
+    resp = client.post("/conversations/c-1/turns", json={"message": "  " + "a" * 500 + "  "})
+    assert resp.status_code == 501

@@ -37,6 +37,20 @@ describe('ConversationScreen', () => {
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
   })
 
+  test('no conversation starts while no language is chosen', async () => {
+    let starts = 0
+    server.use(
+      http.post('*/api/conversations', () => {
+        starts += 1
+        return new HttpResponse(null, { status: 500 })
+      }),
+    )
+    renderApp('/conversation')
+    expect(await screen.findByText(/choose a language/i)).toBeInTheDocument()
+    expect(starts).toBe(0)
+    expect(screen.queryByRole('log', { name: 'Conversation' })).not.toBeInTheDocument()
+  })
+
   test('shows that the tutor is typing while a reply is pending', async () => {
     server.use(
       http.post('*/api/conversations/:id/turns', async () => {
