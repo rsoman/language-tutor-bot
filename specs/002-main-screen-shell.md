@@ -168,7 +168,7 @@ Feature: Main screen shell
     And the learner closes the language picker
     Then the language button reads "Examplish · L2"
 
-  Scenario: Picking a language selects its first level
+  Scenario: A language with a single level has it selected
     Given the learner has not chosen a language
     When the learner opens the app
     And the learner opens the language picker
