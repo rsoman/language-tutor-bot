@@ -34,3 +34,8 @@ def test_profile_rejects_levels_out_of_system_order() -> None:
 def test_profile_rejects_no_levels() -> None:
     with pytest.raises(ValueError, match="at least one level"):
         make_profile(())
+
+
+def test_profile_rejects_a_repeated_level() -> None:
+    with pytest.raises(ValueError, match="easiest first"):
+        make_profile(("L1", "L1"))
