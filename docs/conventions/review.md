@@ -3,6 +3,10 @@
 Every PR gets two reviews: the reviewer agent (automated, `.github/workflows/review.yml`) and the
 owner. Same rules for hand-written and generated code, Claude's PRs included.
 
+The agent runs when a PR opens, reopens or leaves draft. It does not run on every push. After
+fixing blocking findings, the author adds the `re-review` label to run it again. Pushes that only
+merge `main` in need no new review.
+
 ## Severity
 
 - **Blocking:** breaks a **B** rule in any conventions file, a spec criterion, an accepted ADR or
