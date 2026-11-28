@@ -19,7 +19,7 @@ Picking one starts a new conversation in that scenario.
   Ravi's part; the endpoint answers 501.
 - Filtering or searching scenarios.
 - Scenarios in modes other than Conversation.
-- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 
 ## Design source
 
@@ -77,7 +77,7 @@ New router `backend/src/tutor/routers/scenarios.py`; answers 501
 
 `last_result` may be null. `level` is one of that language's levels.
 
-Changed: `ConversationIn` (spec 003) gains `scenario_id: str | None = None`. An unknown id is a 404
+Changed: `ConversationIn` (spec 003) gains `scenario_id: str | None = None`, at most 64 characters. An unknown id is a 404
 once the logic exists; the stub still answers 501.
 
 ## Test scenarios
@@ -174,6 +174,7 @@ Feature: Scenario picker
     When the learner opens Conversation
     And the learner opens the scenario page
     Then the page shows "No scenarios for L1 yet."
+    And the page does not say "0 of 0 L1 scenarios done"
 
   Scenario: When every scenario is done the count says so
     Given every "L1" scenario on offer is done
@@ -215,6 +216,10 @@ Feature: Scenarios API contract
   Scenario: A conversation can start in a scenario
     When a client starts a conversation in a supported language at one of its levels with scenario "s-cafe"
     Then the API answers 501
+
+  Scenario: A scenario id over 64 characters is rejected
+    When a client starts a conversation in a supported language at one of its levels with a scenario id of 65 characters
+    Then the API answers 422
 ```
 
 ### Below the UI: backend and component tests
@@ -227,6 +232,8 @@ Backend criteria (pytest, `backend/tests/test_scenarios.py`):
 
 Component tests (Vitest): loading and failure states; the stretch section is left out with no other-level
 scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes.
+
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 ## Non-behavioural criteria
 
@@ -242,7 +249,8 @@ scenarios; a card's target-language title carries `lang`; the scenario is cleare
   - **Building scenarios at all**: the canvas marked them proposed. If Ravi drops scenarios, this PR is dropped and nothing below it depends on it.
   - **Scenarios are a flat list** with `level`, `recommended`, `done`; the client groups them. Simpler
     than a server-shaped response with sections.
-  - **"Stretch" means any other level the API returns**; the server decides which (one level up today).
+  - **"Stretch" means any other level the API returns**; the server returns at most one, the next level up,
+    and the heading names it.
   - **The scenario choice is not saved across reloads**, matching conversations (spec 003).
   - **A "Free conversation" button** (not on the canvas) so a scenario is never a one-way door.
 
