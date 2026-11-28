@@ -335,6 +335,8 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e` pass locally and in a new
       `frontend` CI job.
 - [ ] CI regenerates the API schemas and fails if the committed output differs (ADR 0004).
+- [ ] The frontend CI job uploads Playwright screenshots of each mode at the three breakpoints as a
+      run artifact (`delivery.md`, screenshots).
 - [ ] No hex colour outside `src/styles/tokens.css` (checked by a lint rule or a test).
 - [ ] No real language name, code or level system in `frontend/src` or the tests.
 - [ ] Every interactive element is keyboard reachable with a visible focus style; axe finds no
