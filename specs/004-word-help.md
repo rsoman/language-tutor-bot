@@ -5,7 +5,8 @@
   model and looking words up (word data, retrieval) are hand-written by Ravi (his decision,
   2026-11-27).
 - **Phase:** 1
-- **Builds on:** spec 003 (PR #4)
+- **Builds on:** spec 003, conversation chat (spec-only PR #16, not merged yet; code in PR #4).
+  The Background below is written out in full, so this spec reads on its own.
 
 ## Goal
 
@@ -39,9 +40,10 @@ a bottom sheet").
 
 - The lightbulb toggles the popover. Opening moves focus to the input. Escape or the close button
   closes it and returns focus to the lightbulb.
-- The learner types a word and presses Enter or "Look up". Empty input does nothing.
+- The learner types a word and presses Enter or "Look up". Spaces around the word are trimmed
+  before the check and before the request. Empty input, or only spaces, does nothing.
 - While looking up: "Looking up…". Found: the result block. Not found (404): `No match for "<word>".`
-  Failed (other errors): "Couldn't look that up." with "Try again".
+  Failed (other errors): "Couldn't look that up." with "Try again", which repeats the same lookup.
 - The feature line is `<part of speech>` followed by each feature as `<name>: <value>`, joined with
   " · ", in the order the API sends them. The UI never names a feature itself (D0003).
 - "Insert into my message" adds the headword to the end of the message box (with a space if the box
@@ -81,8 +83,8 @@ empty. `example` may be null.
 
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
 
-Scenarios go in `frontend/e2e/features/004-word-help.feature`, word for word. Background as in
-spec 003 (Examplish at L1, Conversation open). The fake dictionary's example sentence is
+Scenarios go in `frontend/e2e/features/004-word-help.feature`, word for word. The Background
+chooses Examplish at L1 and opens Conversation. The fake dictionary's example sentence is
 "Example sentence.", translated as "Example translation.".
 
 Shared setup:
