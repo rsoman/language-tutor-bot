@@ -112,7 +112,8 @@ Feature: Word help
     And the learner looks up "coffee"
     Then the word help shows "the-coffee"
     And the word help shows "noun · gender: neuter · plural: the-coffees"
-    And the word help shows the example sentence
+    And the word help shows "Example sentence."
+    And the word help shows "Example translation."
 
   Scenario: The found word goes into the message
     When the learner types "I want"
