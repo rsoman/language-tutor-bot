@@ -136,6 +136,23 @@ Feature: Word help
     And the learner picks "Close word help"
     Then the word help panel is not shown
     And the word help button has focus
+
+  Scenario: The word help button also closes word help
+    When the learner opens word help
+    And the learner picks the word help button
+    Then the word help panel is not shown
+
+  Scenario: Pressing Enter looks up the word
+    When the learner opens word help
+    And the learner types "coffee" in word help
+    And the learner presses Enter
+    Then the word help shows "the-coffee"
+
+  Scenario: After inserting a word the learner keeps typing in the message box
+    When the learner opens word help
+    And the learner looks up "coffee"
+    And the learner inserts the word into the message
+    Then the message box has focus
 ```
 
 ### Negative
@@ -185,6 +202,18 @@ Feature: Word help
     And the learner looks up "tea"
     Then the word help shows "the-tea"
     And the word help does not show "the-coffee"
+
+  Scenario: The learner sees that a lookup is running
+    Given the dictionary answers "coffee" slowly
+    When the learner opens word help
+    And the learner looks up "coffee"
+    Then the word help shows "Looking up…"
+
+  Scenario: Features keep the order the API sends them in
+    Given the dictionary knows "tea" as "the-tea", a "noun" with "plural" "the-teas" and "gender" "neuter"
+    When the learner opens word help
+    And the learner looks up "tea"
+    Then the word help shows "noun · plural: the-teas · gender: neuter"
 ```
 
 ### API (backend)
@@ -213,6 +242,8 @@ Feature: Word lookup API contract
         | only spaces       | 422    |
         | 60 characters     | 501    |
         | 61 characters     | 422    |
+        | 60 characters with spaces around them | 501 |
+        | no query at all   | 422    |
 ```
 
 ### Below the UI: backend and component tests
@@ -224,12 +255,11 @@ Backend criteria (pytest, `backend/tests/test_words.py`):
 - [ ] The OpenAPI schema lists the lookup's parameters `language`, `level` and `query`. (The response
       model is Ravi's; this criterion replaced "lists `WordOut` with `features` as a list of
       `{name, value}`" after his decision on 2026-11-27.)
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 Component tests (Vitest): the "Looking up…" state; the failure state with "Try again"; a word with
 no features and no example shows only the headword and part of speech; inserting into an empty box
 adds no leading space; the lightbulb's `aria-expanded`.
-
-- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 ## Non-behavioural criteria
 
