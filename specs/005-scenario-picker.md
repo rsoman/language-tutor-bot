@@ -19,6 +19,7 @@ Picking one starts a new conversation in that scenario.
   Ravi's part; the endpoint answers 501.
 - Filtering or searching scenarios.
 - Scenarios in modes other than Conversation.
+- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
 
 ## Design source
 
@@ -66,7 +67,7 @@ New router `backend/src/tutor/routers/scenarios.py`; answers 501
   "id": "s-cafe",
   "title": "Ordering at a café",
   "native_title": "…",
-  "topics": "Drinks, accusative articles",
+  "topics": "Drinks, polite requests",
   "level": "L1",
   "recommended": false,
   "done": true,
@@ -82,8 +83,6 @@ once the logic exists; the stub still answers 501.
 ## Test scenarios
 
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
-The scenarios keep their earlier wording, so the feature file still matches them line for
-line; this version only groups them. The code PR adds the `@smoke` tag to the feature file.
 
 Scenarios go in `frontend/e2e/features/005-scenario-picker.feature`, word for word. The fake API
 offers, for Examplish at L1: "Cafe scene" (recommended), "Bakery scene" (done, "Last time: 1 correction"),
@@ -145,11 +144,71 @@ Feature: Scenario picker
 
 ### Negative
 
-No Gherkin scenario. Backend: an unsupported language or level answers 422. Component test: the failure state.
+```gherkin
+  Scenario: The learner can retry when scenarios fail to load
+    Given the scenarios request fails once
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page shows "Couldn't load scenarios."
+    When the learner picks "Try again"
+    Then the section "Recommended next" lists "Cafe scene"
+```
 
 ### Edge cases
 
-No Gherkin scenario. Component tests: the stretch section is left out with no other-level scenarios; the scenario is cleared when the level changes.
+```gherkin
+  Scenario: Without other-level scenarios there is no stretch section
+    Given the scenarios on offer are only at "L1"
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page has no section "Stretch · L2"
+
+  Scenario: Without a recommended scenario there is no recommended section
+    Given no scenario on offer is recommended
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page has no section "Recommended next"
+
+  Scenario: With no scenarios at the level the page says so
+    Given no scenarios are on offer
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page shows "No scenarios for L1 yet."
+
+  Scenario: When every scenario is done the count says so
+    Given every "L1" scenario on offer is done
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page says "2 of 2 L1 scenarios done"
+
+  Scenario: Changing the level clears the scenario
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    And the learner picks the scenario "Cafe scene"
+    And the learner changes the level to "L2"
+    Then the scenario chip reads "Free conversation · Choose a scenario"
+```
+
+### API (backend)
+
+These go in `backend/tests/features/005-scenario-picker.feature` (pytest-bdd). The endpoints are stubs, so a valid request answers 501 until the owner writes the logic. The steps pick a supported language and its levels come from the language registry, so no real language is named.
+
+```gherkin
+Feature: Scenarios API contract
+
+  Scenario Outline: Scenarios need a supported language and level
+    When a client lists scenarios in <language> at <level>
+    Then the API answers <status>
+      Examples:
+        | language                | level                    | status |
+        | a supported language    | one of its levels        | 501    |
+        | an unsupported language | any level                | 422    |
+        | a supported language    | a level it does not have | 422    |
+
+  Scenario: A conversation can start in a scenario
+    When a client starts a conversation in a supported language at one of its levels with scenario "s-cafe"
+    Then the API answers 501
+```
 
 ### Below the UI: backend and component tests
 
@@ -162,18 +221,9 @@ Backend criteria (pytest, `backend/tests/test_scenarios.py`):
 Component tests (Vitest): loading and failure states; the stretch section is left out with no other-level
 scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes.
 
-### Gaps for the owner to decide
-
-Not covered by any scenario or test yet. Say which to add; each one added becomes a
-scenario here and a red test in the code PR.
-
-- Scenarios fail to load, as a scenario with "Try again" (today only a component test).
-- No scenarios at all for the level: what does the page say?
-- No recommended scenario: is the "Recommended next" section hidden?
-- Every scenario at the level is done ("2 of 2 done").
-
 ## Non-behavioural criteria
 
+- [ ] Lint, format, types, build and tests pass in CI.
 - [ ] All checks pass; axe finds no violations on the scenario page at all three breakpoints.
 - [ ] No real language or level system in frontend code or tests.
 - [ ] At least 80% of changed lines covered.
