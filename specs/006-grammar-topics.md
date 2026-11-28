@@ -21,7 +21,7 @@ come in specs 007 and 008.
   only as "not built yet" placeholders, so the links do not bounce to Conversation.
 - Keeping the ticked topics across reloads.
 - A combination test address with an unknown topic id. Spec 008 reads the address and decides.
-- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 
 ## Design source
 
@@ -90,8 +90,8 @@ New router `backend/src/tutor/routers/grammar.py`; validates input, then answers
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
 
 Scenarios go in `frontend/e2e/features/006-grammar-topics.feature`, word for word. The fake API
-offers, for Examplish at L1: "Topic one" (learned 2×, best 8/10, passed), "Topic two" (learned
-1×, best 5/10), "Topic three" (not started).
+offers, for Examplish at L1: "Topic one" (`g-1`, learned 2×, best 8/10, passed), "Topic two"
+(`g-2`, learned 1×, best 5/10), "Topic three" (`g-3`, not started).
 
 Shared setup:
 
@@ -187,6 +187,11 @@ Feature: Grammar topics
     Given no grammar topic on offer is passed
     When the learner opens Grammar
     Then "Select all passed" is disabled
+
+  Scenario: On a phone the combination test bar holds only the buttons
+    Given the learner uses a phone-sized screen
+    When the learner opens Grammar
+    Then the combination test bar holds only "Select all passed", "Clear" and the combination test action
 ```
 
 ### API (backend)
@@ -216,6 +221,8 @@ Backend criteria (pytest, `backend/tests/test_grammar.py`):
 Component tests (Vitest): loading and failure states; the three progress-line forms; a topic's
 example carries `lang`; "Start test · 2 topics" (plural); ticks are cleared when the level changes;
 the not-built-yet placeholder for a lesson link.
+
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 ## Non-behavioural criteria
 
