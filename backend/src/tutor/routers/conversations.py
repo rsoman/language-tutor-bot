@@ -6,10 +6,10 @@ messages and the feedback cards), so the owner writes them, together with the co
 logic that replaces the 501s. Their contract is described in specs/003-conversation-chat.md.
 """
 
-from typing import NoReturn, Self
+from typing import Annotated, NoReturn, Self
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from tutor.languages import LANGUAGES
 
@@ -35,7 +35,9 @@ class ConversationIn(BaseModel):
 
 
 class TurnIn(BaseModel):
-    message: str = Field(min_length=1, max_length=500)
+    # Surrounding spaces are stripped before the length check, so a message of only
+    # spaces is empty (422) and 500 characters with spaces around them still fit (spec 003).
+    message: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 
 
 # response_model=None: the response models are the owner's to write (see the module docstring).

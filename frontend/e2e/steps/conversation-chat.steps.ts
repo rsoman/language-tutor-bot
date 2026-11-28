@@ -109,24 +109,27 @@ Given(
   },
 )
 
-Given('the tutor will send a new word card and then a grammar mistake card', async ({ fakeApi }) => {
-  fakeApi.feedback = [
-    {
-      kind: 'new_word',
-      original: 'apple',
-      replacement: 'the-apple',
-      explanation: null,
-      corrected_sentence: segmentsAround('I eat the-apple.', 'the-apple'),
-    },
-    {
-      kind: 'grammar_error',
-      original: 'eat',
-      replacement: 'eats',
-      explanation: 'Made-up explanation.',
-      corrected_sentence: segmentsAround('She eats.', 'eats'),
-    },
-  ]
-})
+Given(
+  'the tutor will send a new word card and then a grammar mistake card',
+  async ({ fakeApi }) => {
+    fakeApi.feedback = [
+      {
+        kind: 'new_word',
+        original: 'apple',
+        replacement: 'the-apple',
+        explanation: null,
+        corrected_sentence: segmentsAround('I eat the-apple.', 'the-apple'),
+      },
+      {
+        kind: 'grammar_error',
+        original: 'eat',
+        replacement: 'eats',
+        explanation: 'Made-up explanation.',
+        corrected_sentence: segmentsAround('She eats.', 'eats'),
+      },
+    ]
+  },
+)
 
 Given('sending will fail once', async ({ fakeApi }) => {
   fakeApi.turnFailuresLeft = 1

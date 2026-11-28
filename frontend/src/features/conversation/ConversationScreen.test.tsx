@@ -7,7 +7,7 @@ import { renderApp } from '../../test/renderApp'
 import { server } from '../../test/server'
 
 function openConversation() {
-  saveChoice({ code: 'xx', level: 'L1' })
+  saveChoice({ code: 'xx', level: 'L1', levels: { xx: 'L1' } })
   return renderApp('/conversation')
 }
 
