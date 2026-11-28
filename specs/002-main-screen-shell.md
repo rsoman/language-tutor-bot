@@ -22,8 +22,6 @@ shell is the first thing that needs it.
 - Theme switching. Only the fig palette is built; the alternatives stay on the canvas.
 - Any LLM call. The only backend call is the existing `GET /languages`.
 - Deploying to S3 and CloudFront (SPA fallback routing is a deploy concern, later).
-- Every language offers at least one level. That is a rule for `languages.py` (spec 001's data), not
-  for the picker.
 
 ## Design source
 
@@ -240,7 +238,7 @@ Feature: Main screen shell
   Scenario: With no languages on offer the learner is told so
     Given the API offers no languages
     When the learner opens the app
-    Then the page shows "No languages are available yet."
+    Then the language prompt says "No languages are available yet."
 
   Scenario: Keyboard focus stays in the open language picker
     Given the learner has not chosen a language
@@ -283,6 +281,8 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
 
 ## Notes
 
+- Every language offers at least one level. That is a data rule for `languages.py`, so the
+  picker does not handle a language without levels.
 - Folder layout: `src/app/` (router, layout, header), `src/features/language/` (picker, hook,
   storage), `src/features/modes/` (mode tabs and placeholders), `src/components/` (Logo),
   `src/api/` (generated schema and a small fetch client), `e2e/features/` and `e2e/steps/`.
