@@ -20,6 +20,8 @@ come in specs 007 and 008.
 - The lesson screen (spec 007) and the test and results screens (spec 008). Their routes exist here
   only as "not built yet" placeholders, so the links do not bounce to Conversation.
 - Keeping the ticked topics across reloads.
+- A combination test address with an unknown topic id. Spec 008 reads the address and decides.
+- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
 
 ## Design source
 
@@ -86,8 +88,6 @@ New router `backend/src/tutor/routers/grammar.py`; validates input, then answers
 ## Test scenarios
 
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
-The scenarios keep their earlier wording, so the feature file still matches them line for
-line; this version only groups them. The code PR adds the `@smoke` tag to the feature file.
 
 Scenarios go in `frontend/e2e/features/006-grammar-topics.feature`, word for word. The fake API
 offers, for Examplish at L1: "Topic one" (learned 2×, best 8/10, passed), "Topic two" (learned
@@ -154,13 +154,57 @@ Feature: Grammar topics
     Then the combination test action reads "Choose topics first" and is disabled
     When the learner ticks "Topic two"
     Then the combination test action reads "Start test · 1 topic"
-```
 
-Backend: an unsupported language or level answers 422. Component test: the failure state.
+  Scenario: The learner can retry when topics fail to load
+    Given the grammar topics request fails once
+    When the learner opens Grammar
+    Then the page shows "Couldn't load grammar topics."
+    When the learner picks "Try again"
+    Then the topics listed are "Topic one, Topic two, Topic three"
+```
 
 ### Edge cases
 
-No Gherkin scenario. Component tests: "Start test · 2 topics" (plural); ticks are cleared when the level changes.
+```gherkin
+  Scenario: The test action counts two topics in the plural
+    When the learner opens Grammar
+    And the learner ticks "Topic one"
+    And the learner ticks "Topic two"
+    Then the combination test action reads "Start test · 2 topics"
+
+  Scenario: Changing the level clears the ticks
+    When the learner opens Grammar
+    And the learner ticks "Topic two"
+    And the learner changes the level to "L2"
+    Then no topic is ticked
+
+  Scenario: With no topics at the level the page says so
+    Given no grammar topics are on offer
+    When the learner opens Grammar
+    Then the page shows "No grammar topics for L1 yet."
+
+  Scenario: Select all passed is disabled when no topic is passed
+    Given no grammar topic on offer is passed
+    When the learner opens Grammar
+    Then "Select all passed" is disabled
+```
+
+### API (backend)
+
+These go in `backend/tests/features/006-grammar-topics.feature` (pytest-bdd). The endpoints are stubs, so a valid request answers 501 until the owner writes the logic. The steps pick a supported language and its levels come from the language registry, so no real language is named.
+
+```gherkin
+Feature: Grammar topics API contract
+
+  Scenario Outline: Topics need a supported language and level
+    When a client lists grammar topics in <language> at <level>
+    Then the API answers <status>
+      Examples:
+        | language                | level                    | status |
+        | a supported language    | one of its levels        | 501    |
+        | an unsupported language | any level                | 422    |
+        | a supported language    | a level it does not have | 422    |
+```
 
 ### Below the UI: backend and component tests
 
@@ -173,18 +217,9 @@ Component tests (Vitest): loading and failure states; the three progress-line fo
 example carries `lang`; "Start test · 2 topics" (plural); ticks are cleared when the level changes;
 the not-built-yet placeholder for a lesson link.
 
-### Gaps for the owner to decide
-
-Not covered by any scenario or test yet. Say which to add; each one added becomes a
-scenario here and a red test in the code PR.
-
-- Topics fail to load, as a scenario with "Try again" (today only a component test).
-- No topics for the level: what does the page say?
-- "Select all passed" when no topic is passed: disabled, or does nothing?
-- A combination test address with an unknown topic id (`/grammar/test?topics=nope`), once spec 008 reads it.
-
 ## Non-behavioural criteria
 
+- [ ] Lint, format, types, build and tests pass in CI.
 - [ ] All checks pass; axe finds no violations on Grammar with topics, at all three breakpoints.
 - [ ] No real language in frontend code or tests.
 - [ ] At least 80% of changed lines covered.
