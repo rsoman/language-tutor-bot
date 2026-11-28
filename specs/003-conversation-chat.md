@@ -244,6 +244,15 @@ Feature: Conversation chat
     And the learner picks "Try again"
     Then the tutor received the message "My message"
 
+  Scenario: The learner can send a new message while an earlier one is not sent
+    Given sending will fail once
+    And the tutor will reply "Reply line"
+    When the learner opens Conversation
+    And the learner sends "First message"
+    And the learner sends "Second message"
+    Then the message "First message" is marked "Not sent."
+    And the tutor says "Reply line"
+
   Scenario: The learner can retry when the conversation fails to start
     Given starting will fail once
     And the tutor will open with "Opening line" translated as "Opening translation"
@@ -305,8 +314,6 @@ Without a chosen language, Conversation shows the spec 002 prompt. That is spec 
 is not repeated here (this feature's Background always chooses a language). The code PR adds a
 component test that no conversation starts while no language is chosen.
 
-Component tests added with the race fix (2026-11-28): a late failure from an older start does not fail a newer start for the same level; a late success from an older start does not replace a newer start for the same level. They stay component tests: the timing cannot be set up reliably in a browser test.
-
 ### API (backend)
 
 These go in `backend/tests/features/003-conversation-chat.feature` (pytest-bdd). The endpoints are stubs, so a valid request answers 501 until the owner writes the logic. The steps pick a supported language and its levels come from the language registry, so no real language is named.
@@ -350,7 +357,10 @@ Backend criteria (pytest, `backend/tests/test_conversations.py`; the contract ca
 Component tests (Vitest) cover: each card kind's heading and colour class; the corrected sentence
 renders changed segments in `<strong>`; Enter sends and Shift+Enter does not; the 500-character
 limit; the "Tutor is typing" indicator; the start error with "Try again"; no conversation starts
-while no language is chosen.
+while no language is chosen; a late failure from an older start does not fail a newer start for
+the same level; a late success from an older start does not replace a newer start for the same
+level. The two race cases stay component tests because the timing cannot be set up reliably in a
+browser test.
 
 - [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
