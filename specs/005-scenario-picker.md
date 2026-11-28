@@ -40,7 +40,8 @@ Done badge).
   topics line at the bottom.
 - Desktop: 4 columns. Tablet: 2 columns. Phone: recommended cards in one row that scrolls sideways;
   the other lists are single-column rows.
-- A "Free conversation" button next to the back link lets the learner leave scenarios.
+- Not on the canvas (proposed in Decisions): a "Free conversation" button next to the back link lets
+  the learner leave scenarios.
 
 ## Behaviour
 
@@ -49,7 +50,9 @@ Done badge).
   "Couldn't load scenarios." with "Try again".
 - "Recommended next" lists scenarios with `recommended: true` at the learner's level. "All <level>
   scenarios" lists every scenario at the learner's level (recommended ones too). "Stretch · <level>"
-  lists scenarios at any other level; the section is left out when there are none. The stretch level
+  lists scenarios at the next level up only, by the levels' `rank` (spec 002). The client drops
+  scenarios at any other level, so a lower level is never called a stretch. The section is left out
+  when there are none. The stretch level
   name comes from the scenarios, never from a level system.
 - Picking a card (or "Free conversation") goes back to `/conversation` and starts a new conversation
   with that scenario (or none). The choice is kept for that language and level while the app is open.
@@ -77,7 +80,7 @@ New router `backend/src/tutor/routers/scenarios.py`; answers 501
 
 `last_result` may be null. `level` is one of that language's levels.
 
-Changed: `ConversationIn` (spec 003) gains `scenario_id: str | None = None`, at most 64 characters. An unknown id is a 404
+Changed: `ConversationIn` (spec 003) gains `scenario_id: str | None = None`, 1 to 64 characters when given. An unknown id is a 404
 once the logic exists; the stub still answers 501.
 
 ## Test scenarios
@@ -140,6 +143,21 @@ Feature: Scenario picker
     When the learner opens Conversation
     And the learner opens the scenario page
     Then the "Conversation" mode tab is the current page
+
+  Scenario: The chosen scenario stays while the learner switches modes
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    And the learner picks the scenario "Cafe scene"
+    And the learner picks the "Grammar" mode tab
+    And the learner picks the "Conversation" mode tab
+    Then the scenario chip reads "Scenario: Cafe scene · Change"
+
+  Scenario: On a phone the recommended scenarios scroll sideways
+    Given the learner uses a phone-sized screen
+    And every "L1" scenario on offer is recommended
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the "Recommended next" cards sit in one row that scrolls sideways
 ```
 
 ### Negative
@@ -195,6 +213,20 @@ Feature: Scenario picker
     And the learner picks the scenario "Cafe scene"
     And the learner changes the language to "Samplese"
     Then the scenario chip reads "Free conversation · Choose a scenario"
+
+  Scenario: The learner sees that scenarios are loading
+    Given the scenarios request is slow
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    Then the page shows "Loading scenarios…"
+
+  Scenario: A lower level is never shown as a stretch
+    Given at level "L2" the API also sends "Cafe scene" at "L1"
+    When the learner opens Conversation
+    And the learner changes the level to "L2"
+    And the learner opens the scenario page
+    Then the page has no section "Stretch · L1"
+    And the page does not list "Cafe scene"
 ```
 
 ### API (backend)
@@ -212,14 +244,20 @@ Feature: Scenarios API contract
         | a supported language    | one of its levels        | 501    |
         | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
+        | a supported language    | no level at all          | 422    |
 
   Scenario: A conversation can start in a scenario
     When a client starts a conversation in a supported language at one of its levels with scenario "s-cafe"
     Then the API answers 501
 
-  Scenario: A scenario id over 64 characters is rejected
-    When a client starts a conversation in a supported language at one of its levels with a scenario id of 65 characters
-    Then the API answers 422
+  Scenario Outline: A scenario id is 1 to 64 characters
+    When a client starts a conversation in a supported language at one of its levels with a scenario id of <length> characters
+    Then the API answers <status>
+      Examples:
+        | length | status |
+        | 64     | 501    |
+        | 65     | 422    |
+        | 0      | 422    |
 ```
 
 ### Below the UI: backend and component tests
@@ -229,11 +267,11 @@ Backend criteria (pytest, `backend/tests/test_scenarios.py`):
 - [ ] `GET /scenarios` with a supported language and level answers 501; unsupported language or level answers 422.
 - [ ] `POST /conversations` accepts an optional `scenario_id` (still 501).
 - [ ] The OpenAPI schema lists `ScenarioOut`.
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 Component tests (Vitest): loading and failure states; the stretch section is left out with no other-level
-scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes.
-
-- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
+scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes;
+only the next level up is shown as a stretch.
 
 ## Non-behavioural criteria
 
@@ -249,8 +287,9 @@ scenarios; a card's target-language title carries `lang`; the scenario is cleare
   - **Building scenarios at all**: the canvas marked them proposed. If Ravi drops scenarios, this PR is dropped and nothing below it depends on it.
   - **Scenarios are a flat list** with `level`, `recommended`, `done`; the client groups them. Simpler
     than a server-shaped response with sections.
-  - **"Stretch" means any other level the API returns**; the server returns at most one, the next level up,
-    and the heading names it.
+  - **"Stretch" is only the next level up.** The server should return at most that level beside the
+    learner's; the client still shows only the next level up, so a wrong server answer cannot label a
+    lower level as a stretch.
   - **The scenario choice is not saved across reloads**, matching conversations (spec 003).
   - **A "Free conversation" button** (not on the canvas) so a scenario is never a one-way door.
 
