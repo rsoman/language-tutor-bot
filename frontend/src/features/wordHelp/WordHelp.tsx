@@ -28,6 +28,8 @@ export function WordHelp({ languageCode, level, onInsert }: WordHelpProps) {
   const buttonRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const inputId = useId()
+  // Counts lookups, so a slow answer for an earlier word cannot replace the newest one.
+  const latestLookup = useRef(0)
 
   // Focus the input when the panel opens.
   useEffect(() => {
@@ -55,10 +57,14 @@ export function WordHelp({ languageCode, level, onInsert }: WordHelpProps) {
   async function runLookup() {
     const word = query.trim()
     if (word === '') return
+    latestLookup.current += 1
+    const request = latestLookup.current
     setLookup({ status: 'loading' })
     try {
-      setLookup({ status: 'found', word: await lookupWord(languageCode, level, word) })
+      const found = await lookupWord(languageCode, level, word)
+      if (request === latestLookup.current) setLookup({ status: 'found', word: found })
     } catch (error) {
+      if (request !== latestLookup.current) return
       const notFound = error instanceof ApiError && error.status === 404
       setLookup(notFound ? { status: 'notFound', query: word } : { status: 'failed' })
     }
