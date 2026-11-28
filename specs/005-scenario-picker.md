@@ -19,6 +19,9 @@ Picking one starts a new conversation in that scenario.
 
 - Scenario content, how recommendations are chosen, and how "done" and "last result" are tracked.
   Ravi's part; the endpoint answers 501.
+- Keeping a conversation's progress per scenario. For now picking a scenario replaces the
+  conversation in progress and its messages are not kept (owner, 2026-11-28: fine for now; later
+  each scenario should keep its own progress).
 - Filtering or searching scenarios.
 - Scenarios in modes other than Conversation.
 - Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005. The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
@@ -62,7 +65,8 @@ Done badge).
   with that scenario (or none). A conversation already in progress is replaced: its messages are
   cleared and are not kept. The choice stays while the learner switches modes and the app is open.
 - Changing language or level clears the scenario. Changing the language also moves the learner to
-  that language's easiest level (spec 002), so a level the new language does not have is never kept.
+  that language's current level (spec 002: the level last chosen for it, or its easiest level if
+  never chosen), so a level the new language does not have is never kept.
   Going back to the earlier language or level does not bring the old scenario back.
 
 ## API contract
@@ -96,7 +100,7 @@ Approved by the owner in a spec-only PR before any code (`docs/conventions/testi
 
 Scenarios go in `frontend/e2e/features/005-scenario-picker.feature`, word for word. The fake API
 offers, for Examplish at L1: "Cafe scene" (recommended), "Bakery scene" (done, "Last time: 1 correction"),
-and at L2 "Doctor scene".
+and at L2 "Doctor scene". It offers no scenarios for Samplese.
 
 Shared setup:
 
@@ -303,7 +307,8 @@ Backend criteria (pytest, `backend/tests/test_scenarios.py`):
 
 Component tests (Vitest): loading and failure states; the stretch section is left out with no other-level
 scenarios; a card's target-language title carries `lang`; the scenario is cleared when the level changes;
-only the next level up is shown as a stretch; the tablet layout has 2 columns; a done card shows
+only the next level up is shown as a stretch; the desktop layout has 4 columns and the tablet 2;
+on a phone the full list is single-column rows; a done card shows
 "Practise again" and a not-done card its topics; the stretch section carries its note "A step up. The
 tutor keeps its replies simple and gives more hints."; "← Back to conversation" goes to
 `/conversation`.
