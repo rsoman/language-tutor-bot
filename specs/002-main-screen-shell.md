@@ -64,17 +64,22 @@ The app name comes from one config value (`src/config.ts`, `appName`). No compon
 ### Languages and levels
 
 - Languages come from `GET /languages` (already in `backend/src/tutor/main.py`). Its response
-  type is generated with `openapi-typescript` (`pnpm gen:api`), never hand-written.
+  Zod schema and type are generated from the OpenAPI schema (`pnpm gen:api`, ADR 0004), never
+  hand-written, and every response is checked against the schema. A response with the wrong shape
+  counts as a failed request.
 - There is no default language. Until the learner picks one, the pill reads "Choose language"
   and every mode shows a prompt: "Choose the language you want to practise", with a button that
   opens the picker.
 - The picker is a popover from the pill with two radio groups: Language (each language's
   `name`, with `native_name` under it) and Level (that language's `levels`, labelled with its
-  `level_system`, for example "Level (CEFR)"). Picking a language selects its first listed
-  level, which the learner can change. A "Done" button and the Escape key close it.
+  `level_system`, for example "Level (TEST)"). Picking a language selects its first listed
+  level, which the learner can change. A "Done" button and the Escape key close it and return
+  focus to the pill. While it is open, Tab and Shift+Tab stay inside it.
 - Once picked, the pill reads `<name> · <level>` on tablet and desktop and
   `<CODE> · <level>` on mobile. The choice is saved in `localStorage` and restored on reload.
-  A saved code that `GET /languages` no longer returns is ignored (the learner picks again).
+  A saved code that `GET /languages` no longer returns is ignored (the learner picks again), and so
+  is a saved value that is not valid JSON.
+- If `GET /languages` returns an empty list, the prompt says "No languages are available yet."
 - While languages load, the pill is disabled and reads "Loading languages". If the request
   fails, the pill reads "Languages unavailable" and the prompt offers "Try again".
 
@@ -97,7 +102,7 @@ Uses the existing endpoint. No backend change.
 
 In development, Vite proxies `/api/*` to `http://127.0.0.1:8000/*`, so the backend needs no CORS
 change. Tests never call the backend: Vitest uses MSW, Playwright uses `page.route`. Test data
-uses made-up languages (`xx`, `yy`) and made-up level systems, so no test depends on German or CEFR.
+uses made-up languages (`xx`, `yy`) and made-up level systems, so no test depends on a real language or level system.
 
 ## Test scenarios
 
@@ -218,6 +223,11 @@ Feature: Main screen shell
     Given the saved language choice is not valid JSON
     When the learner opens the app
     Then the language button reads "Choose language"
+
+  Scenario: A language list with the wrong shape counts as a failure
+    Given the languages request answers with the wrong shape
+    When the learner opens the app
+    Then the language button reads "Languages unavailable"
 ```
 
 ### Edge cases
@@ -258,6 +268,7 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
 - [ ] Lint, format, types, build and tests pass in CI.
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e` pass locally and in a new
       `frontend` CI job.
+- [ ] CI regenerates the API schemas and fails if the committed output differs (ADR 0004).
 - [ ] No hex colour outside `src/styles/tokens.css` (checked by a lint rule or a test).
 - [ ] No real language name, code or level system in `frontend/src` or the tests.
 - [ ] Every interactive element is keyboard reachable with a visible focus style; axe finds no
@@ -268,7 +279,9 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
 
 - D0004 responsive breakpoints (accepted): followed as written.
 - `docs/conventions/react.md`: React + TS + Vite, pnpm, React Router, TanStack Query,
-  openapi-typescript, ESLint + Prettier, Vitest + Testing Library, Playwright.
+  ESLint + Prettier, Vitest + Testing Library, Playwright.
+- ADR 0004 (proposed with this spec): orval generates Zod schemas from the OpenAPI schema; types come
+  from them with `z.infer`; responses are validated at runtime.
 - Proposed here, owner said go ahead (2026-11-26), to confirm in review:
   - **Gherkin runner for Playwright: `playwright-bdd`.** It turns `.feature` files into Playwright
     tests, the same shape as pytest-bdd on the backend. This settles the "to be decided" in
@@ -277,7 +290,7 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
     profile, and this storage is removed).
   - **Fonts self-hosted** with `@fontsource` packages, so the app makes no third-party font requests.
   - **Picking a language selects its first listed level.** This is not a default language; it
-    only saves a click when a language has a single level, as German does today.
+    only saves a click when a language has a single level.
 
 ## Notes
 
@@ -286,6 +299,6 @@ keyboard behaviour, the `localStorage` read and write helpers, the loading state
 - Folder layout: `src/app/` (router, layout, header), `src/features/language/` (picker, hook,
   storage), `src/features/modes/` (mode tabs and placeholders), `src/components/` (Logo),
   `src/api/` (generated schema and a small fetch client), `e2e/features/` and `e2e/steps/`.
-- `pnpm gen:api` writes `src/api/schema.d.ts` from the backend's OpenAPI JSON
+- `pnpm gen:api` runs orval (ADR 0004) and writes the Zod schemas under `src/api/` from the backend's OpenAPI JSON
   (`uv run python -c` dump into `frontend/openapi.json`). Both files are committed so CI does
   not need the backend running.
