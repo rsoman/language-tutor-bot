@@ -66,8 +66,8 @@ Red (accent) means a mistake, amber (highlight) means help, as on the Cards boar
   the same text again. While a message shows "Not sent.", the learner can still send new messages;
   each goes at the end of the list. "Try again" resends the failed message where it stands, and the
   tutor's reply to it appears at the end. Like Send, "Try again" is disabled while a reply is
-  pending, so two replies never race. If starting fails, the message area says "Couldn't start a conversation."
-  with "Try again".
+  pending, so two replies never race. If starting fails, the message area says "Couldn't start a
+  conversation." with "Try again".
 - New messages scroll into view. The message list is a `log` region, so screen readers announce
   new messages.
 
