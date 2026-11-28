@@ -51,9 +51,7 @@ When('the learner inserts the word into the message', async ({ page }) => {
   await panel(page).getByRole('button', { name: 'Insert into my message' }).click()
 })
 
-When('the learner presses Escape', async ({ page }) => {
-  await page.keyboard.press('Escape')
-})
+// 'the learner presses Escape' is shared, in main-screen-shell.steps.ts.
 
 Then('the word help panel is shown', async ({ page }) => {
   await expect(panel(page)).toBeVisible()

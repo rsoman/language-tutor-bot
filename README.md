@@ -23,7 +23,6 @@ docs/adr/    Architecture decision records
 CLAUDE.md    Rules Claude Code follows in this repo
 ```
 
-
 ## Run locally
 
 Requires [uv](https://docs.astral.sh/uv/).

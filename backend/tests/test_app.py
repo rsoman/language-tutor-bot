@@ -20,7 +20,7 @@ def test_languages_lists_german_a1(client: TestClient) -> None:
     resp = client.get("/languages")
     assert resp.status_code == 200
     codes = {lang["code"]: lang for lang in resp.json()}
-    assert codes["de"]["levels"] == ["A1"]
+    assert codes["de"]["levels"] == [{"code": "A1", "rank": 1}]
 
 
 def test_unknown_language_raises() -> None:

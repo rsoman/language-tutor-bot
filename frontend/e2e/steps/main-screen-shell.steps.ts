@@ -9,7 +9,9 @@ import { expect, type Page } from '@playwright/test'
 import { Given, Then, When } from './fixtures'
 
 const PHONE = { width: 390, height: 844 }
+const TABLET = { width: 834, height: 1112 }
 const DESKTOP = { width: 1280, height: 800 }
+const STORAGE_KEY = 'vaikhari.languageChoice'
 
 // --- Helpers -------------------------------------------------------------
 
@@ -65,6 +67,72 @@ Given('the learner uses a desktop-sized screen', async ({ page }) => {
   await page.setViewportSize(DESKTOP)
 })
 
+Given('the learner uses a tablet-sized screen', async ({ page }) => {
+  await page.setViewportSize(TABLET)
+})
+
+Given('the saved language choice is not valid JSON', async ({ page, fakeApi }) => {
+  expect(fakeApi.languages.length).toBeGreaterThan(0)
+  await page.addInitScript((key) => localStorage.setItem(key, '{not json'), STORAGE_KEY)
+})
+
+Given('the languages request answers with the wrong shape', async ({ fakeApi }) => {
+  fakeApi.wrongShape = true
+})
+
+Given('the languages request is slow', async ({ fakeApi }) => {
+  fakeApi.slow = true
+})
+
+Given('the API offers no languages', async ({ fakeApi }) => {
+  fakeApi.languages = []
+})
+
+Given(
+  'the API sends the levels of {string} in the order {string}',
+  async ({ fakeApi }, language: string, order: string) => {
+    const codes = order.split(', ')
+    fakeApi.languages = fakeApi.languages.map((l) =>
+      l.name !== language
+        ? l
+        : {
+            ...l,
+            levels: codes.map((code) => {
+              const level = l.levels.find((lv) => lv.code === code)
+              if (!level) throw new Error(`${language} has no level ${code}`)
+              return level
+            }),
+          },
+    )
+  },
+)
+
+Given(
+  'the API offers {string} with level {string} at rank {int} and level {string} at rank {int}',
+  async (
+    { fakeApi },
+    name: string,
+    first: string,
+    firstRank: number,
+    second: string,
+    secondRank: number,
+  ) => {
+    fakeApi.languages = [
+      ...fakeApi.languages,
+      {
+        code: 'zz',
+        name,
+        native_name: `${name} native`,
+        level_system: 'TEST',
+        levels: [
+          { code: first, rank: firstRank },
+          { code: second, rank: secondRank },
+        ],
+      },
+    ]
+  },
+)
+
 // --- When ----------------------------------------------------------------
 
 When('the learner opens the app', async ({ page }) => {
@@ -97,6 +165,15 @@ When('the learner picks the level {string}', async ({ page }, level: string) => 
 
 When('the learner closes the language picker', async ({ page }) => {
   await languagePicker(page).getByRole('button', { name: 'Done' }).click()
+})
+
+When('the learner presses Escape', async ({ page }) => {
+  await page.keyboard.press('Escape')
+})
+
+When('the learner presses Tab from the {string} button', async ({ page }, label: string) => {
+  await languagePicker(page).getByRole('button', { name: label }).focus()
+  await page.keyboard.press('Tab')
 })
 
 When('the learner picks {string}', async ({ page }, label: string) => {
@@ -135,6 +212,29 @@ Then('the page shows {string}', async ({ page }, text: string) => {
 Then('the language button reads {string}', async ({ page }, label: string) => {
   // useInnerText: only the text that is actually shown at this screen size counts.
   await expect(languageButton(page)).toHaveText(label, { useInnerText: true })
+})
+
+Then('the language picker is not shown', async ({ page }) => {
+  await expect(languagePicker(page)).toBeHidden()
+})
+
+Then('the language button has focus', async ({ page }) => {
+  await expect(languageButton(page)).toBeFocused()
+})
+
+Then('the language button is disabled', async ({ page }) => {
+  await expect(languageButton(page)).toBeDisabled()
+})
+
+Then('the language prompt says {string}', async ({ page }, text: string) => {
+  await expect(page.getByRole('main').getByText(text)).toBeVisible()
+})
+
+Then('keyboard focus is inside the language picker', async ({ page }) => {
+  const inside = await languagePicker(page).evaluate((dialog) =>
+    dialog.contains(document.activeElement),
+  )
+  expect(inside).toBe(true)
 })
 
 Then('the level {string} is selected', async ({ page }, level: string) => {

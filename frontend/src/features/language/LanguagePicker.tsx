@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { keepFocusInside } from './focusTrap'
 import { useLanguageChoice } from './LanguageChoiceContext'
 import styles from './LanguagePicker.module.css'
 
@@ -37,11 +38,12 @@ export function LanguagePicker() {
     wasOpen.current = pickerOpen
   }, [pickerOpen])
 
-  // While the popover is open, Escape closes it.
+  // While the popover is open, Escape closes it, and Tab and Shift+Tab stay inside it.
   useEffect(() => {
     if (!pickerOpen) return
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') closePicker()
+      if (event.key === 'Tab' && dialogRef.current) keepFocusInside(dialogRef.current, event)
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
@@ -107,15 +109,15 @@ export function LanguagePicker() {
               <legend className={styles.legend}>Level ({choice.language.level_system})</legend>
               <div className={styles.levels}>
                 {choice.language.levels.map((level) => (
-                  <label key={level} className={styles.levelLabel}>
+                  <label key={level.code} className={styles.levelLabel}>
                     <input
                       type="radio"
                       name="level"
-                      value={level}
-                      checked={choice.level === level}
-                      onChange={() => chooseLevel(level)}
+                      value={level.code}
+                      checked={choice.level === level.code}
+                      onChange={() => chooseLevel(level.code)}
                     />
-                    {level}
+                    {level.code}
                   </label>
                 ))}
               </div>
