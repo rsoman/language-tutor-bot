@@ -44,6 +44,9 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
   // Refs are read inside async callbacks, where `state` would be out of date.
   const currentKey = useRef<string | null>(null)
   const conversationId = useRef<string | null>(null)
+  // Counts start requests, so an answer from an older request is ignored even when the
+  // learner has come back to the same language and level in the meantime.
+  const latestStart = useRef(0)
 
   // The scenario sits in state (to render the chip) and in a ref (for the callbacks below).
   const [scenarioChoice, setScenarioChoice] = useState<ScenarioChoice | null>(null)
@@ -56,12 +59,14 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
 
   const start = useCallback(async (language: string, level: string, scenarioId: string | null) => {
     const key = conversationKey(language, level, scenarioId)
+    latestStart.current += 1
+    const request = latestStart.current
     currentKey.current = key
     conversationId.current = null
     dispatch({ type: 'start', key })
     try {
       const conversation = await startConversation(language, level, scenarioId)
-      if (currentKey.current !== key) return
+      if (request !== latestStart.current) return
       conversationId.current = conversation.id
       dispatch({
         type: 'started',
@@ -70,6 +75,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
         opening: conversation.opening,
       })
     } catch {
+      if (request !== latestStart.current) return
       dispatch({ type: 'startFailed', key })
     }
   }, [])
