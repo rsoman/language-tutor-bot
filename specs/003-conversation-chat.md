@@ -251,7 +251,16 @@ Feature: Conversation chat
     And the learner sends "First message"
     And the learner sends "Second message"
     Then the message "First message" is marked "Not sent."
-    And the tutor says "Reply line"
+    And the messages are in the order "First message, Second message, Reply line"
+
+  Scenario: Trying again keeps the failed message in place
+    Given sending will fail once
+    And the tutor will reply "Reply line"
+    When the learner opens Conversation
+    And the learner sends "First message"
+    And the learner sends "Second message"
+    And the learner picks "Try again"
+    Then the messages are in the order "First message, Second message, Reply line, Reply line"
 
   Scenario: The learner can retry when the conversation fails to start
     Given starting will fail once
