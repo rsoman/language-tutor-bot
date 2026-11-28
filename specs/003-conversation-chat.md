@@ -18,7 +18,7 @@ only as a typed contract that answers 501 until Ravi writes the logic.
 ## Out of scope
 
 - The tutor's logic: prompts, LLM calls, deciding what feedback to give. Hand-written by Ravi.
-- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
+- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
 - Word help (the lightbulb popover): spec 004.
 - Scenarios (the "Scenario: … · Change" chip and the picker): spec 005. Conversations here have no scenario.
 - Streaming replies token by token. A reply arrives whole. Streaming can be a later spec once the
@@ -190,6 +190,14 @@ Feature: Conversation chat
     When the learner opens Conversation
     Then the message box is just above the mode tabs
 
+  Scenario: Changing the language starts a new conversation
+    Given the tutor will open with "Opening line" translated as "Opening translation"
+    When the learner opens Conversation
+    And the learner sends "My message"
+    And the learner changes the language to "Samplese"
+    Then the learner's message "My message" is not shown
+    And the tutor says "Opening line"
+
   Scenario: A word the learner already learned gets a reminder
     Given the tutor will mark a known word: "apple" is "the-apple" in "I eat the-apple."
     When the learner opens Conversation
@@ -229,6 +237,12 @@ Feature: Conversation chat
     When the learner types "   "
     Then the Send button is disabled
 
+  Scenario: Send is disabled while the conversation starts
+    Given the conversation is slow to start
+    When the learner opens Conversation
+    And the learner types "My message"
+    Then the Send button is disabled
+
   Scenario: Send is disabled while the tutor is replying
     Given the tutor is slow to reply
     When the learner opens Conversation
@@ -257,7 +271,7 @@ Feature: Conversation API contract
       Examples:
         | language                | level                    | status |
         | a supported language    | one of its levels        | 501    |
-        | an unsupported language | any level                | 422    |
+        | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
 
   Scenario Outline: A turn message is 1 to 500 characters and not only spaces
