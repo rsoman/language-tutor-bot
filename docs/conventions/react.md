@@ -18,6 +18,15 @@ Why not Next.js: the app sits behind a login (no SEO need), FastAPI already serv
 streaming, and Next needs a Node server, which costs money and adds a second backend. Revisit if
 public marketing pages are added. See an ADR if this changes.
 
+## API schemas (orval, ADR 0004)
+
+- **B** `pnpm gen:api` runs orval on `openapi.json` and writes Zod schemas under `src/api/`. Never edit
+  the generated files; change the backend's Pydantic models and regenerate.
+- **B** Types come from the schemas with `z.infer`. Do not declare a second type for the same response.
+- **B** The API client parses every response with its schema. A parse failure is a failed request,
+  shown with the screen's normal failure state.
+- **N** Keep the orval config to the Zod output until a spec needs its client or MSW generators.
+
 ## TypeScript
 
 - **B** `strict: true`, plus `noUncheckedIndexedAccess`. No `any`; use `unknown` and narrow.
