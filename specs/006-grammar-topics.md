@@ -21,7 +21,7 @@ come in specs 007 and 008.
   only as "not built yet" placeholders, so the links do not bounce to Conversation.
 - Keeping the ticked topics across reloads.
 - A combination test address with an unknown topic id. Spec 008 reads the address and decides.
-- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
+- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
 
 ## Design source
 
@@ -202,7 +202,7 @@ Feature: Grammar topics API contract
       Examples:
         | language                | level                    | status |
         | a supported language    | one of its levels        | 501    |
-        | an unsupported language | any level                | 422    |
+        | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
 ```
 
