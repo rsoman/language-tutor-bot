@@ -22,6 +22,8 @@ shell is the first thing that needs it.
 - Theme switching. Only the fig palette is built; the alternatives stay on the canvas.
 - Any LLM call. The only backend call is the existing `GET /languages`.
 - Deploying to S3 and CloudFront (SPA fallback routing is a deploy concern, later).
+- Every language offers at least one level. That is a rule for `languages.py` (spec 001's data), not
+  for the picker.
 
 ## Design source
 
@@ -31,7 +33,7 @@ Canvas: https://claude.ai/artifact/CFP8hVHwBhNRCC9CJwppkN
 |---|---|---|
 | Desktop, 1024px and up | Main ("Tutor app, 3 modes") | Header 72px, logo + app name left, language pill right. Mode tabs as a centred segmented control under the header. Content column max 760px. |
 | Tablet, 640 to 1023px | Tablet layouts | Same as desktop, 40px side margins. |
-| Mobile, under 640px | Mobile layouts | Header 56px, pill shows the language code ("DE · A1"). Mode tabs become a bottom tab bar with an icon and label per mode, each at least 56px tall. |
+| Mobile, under 640px | Mobile layouts | Header 56px, pill shows the language code ("XX · L1"). Mode tabs become a bottom tab bar with an icon and label per mode, 56px tall in the design. The test checks D0004's 44px minimum. |
 
 Fig tokens (into `src/styles/tokens.css`, the only place hex values appear): ground `#F6EEE3`,
 surface `#FFFAF3`, ink `#2B1226`, primary `#5B2A4E`, accent `#A8323F`, good `#4F6126`,
@@ -102,8 +104,6 @@ uses made-up languages (`xx`, `yy`) and made-up level systems, so no test depend
 ## Test scenarios
 
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
-The scenarios keep their earlier wording, so the feature file still matches them line for
-line; this version only groups them. The code PR adds the `@smoke` tag to the feature file.
 
 Each scenario becomes one scenario in `frontend/e2e/features/002-main-screen-shell.feature`,
 with the same wording. The fake API offers "Examplish" (`xx`, levels L1, L2) and "Samplese"
@@ -180,6 +180,19 @@ Feature: Main screen shell
     Given the learner uses a desktop-sized screen
     When the learner opens the app
     Then the mode tabs are under the header
+
+  Scenario: On a tablet the mode tabs are under the header
+    Given the learner uses a tablet-sized screen
+    When the learner opens the app
+    Then the mode tabs are under the header
+
+  Scenario: Escape closes the language picker
+    Given the learner has not chosen a language
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner presses Escape
+    Then the language picker is not shown
+    And the language button has focus
 ```
 
 ### Negative
@@ -202,9 +215,12 @@ Feature: Main screen shell
     Then the language button reads "Languages unavailable"
     When the learner picks "Try again"
     Then the language button reads "Choose language"
-```
 
-Component test: `localStorage` holding bad JSON is ignored.
+  Scenario: A damaged saved choice is ignored
+    Given the saved language choice is not valid JSON
+    When the learner opens the app
+    Then the language button reads "Choose language"
+```
 
 ### Edge cases
 
@@ -214,28 +230,34 @@ Component test: `localStorage` holding bad JSON is ignored.
     When the learner opens the app
     Then the language button reads "Choose language"
     And the page shows "Choose the language you want to practise"
-```
 
-Component tests: the loading state; Escape closes the picker and returns focus to the pill.
+  Scenario: The language button waits while languages load
+    Given the languages request is slow
+    When the learner opens the app
+    Then the language button reads "Loading languages"
+    And the language button is disabled
+
+  Scenario: With no languages on offer the learner is told so
+    Given the API offers no languages
+    When the learner opens the app
+    Then the page shows "No languages are available yet."
+
+  Scenario: Keyboard focus stays in the open language picker
+    Given the learner has not chosen a language
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner presses Tab from the "Done" button
+    Then keyboard focus is inside the language picker
+```
 
 ### Below the UI: backend and component tests
 
 Component and unit tests (Vitest) cover what would make the feature file noisy: the picker's
-keyboard behaviour (Escape closes it and returns focus to the pill), the `localStorage` read and
-write helpers (bad JSON is ignored), the loading state, and that the logo SVG has no hard-coded hex.
-
-### Gaps for the owner to decide
-
-Not covered by any scenario or test yet. Say which to add; each one added becomes a
-scenario here and a red test in the code PR.
-
-- The API returns an empty language list (what does the picker show?).
-- Keyboard focus stays inside the open picker (Tab does not reach the page behind it). The reviewer flagged this on PR #3; today the picker has no focus trap.
-- A language with no levels (should the API reject it, or the picker hide it?).
-- A tablet-sized screen (D0004's middle breakpoint) has no layout scenario; only axe runs there.
+keyboard behaviour, the `localStorage` read and write helpers, the loading state, and that the logo SVG has no hard-coded hex.
 
 ## Non-behavioural criteria
 
+- [ ] Lint, format, types, build and tests pass in CI.
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm e2e` pass locally and in a new
       `frontend` CI job.
 - [ ] No hex colour outside `src/styles/tokens.css` (checked by a lint rule or a test).
@@ -252,7 +274,7 @@ scenario here and a red test in the code PR.
 - Proposed here, owner said go ahead (2026-11-26), to confirm in review:
   - **Gherkin runner for Playwright: `playwright-bdd`.** It turns `.feature` files into Playwright
     tests, the same shape as pytest-bdd on the backend. This settles the "to be decided" in
-    `docs/conventions/testing.md`, which this PR updates.
+    `docs/conventions/testing.md`, which now names it.
   - **Language choice kept in `localStorage`** until accounts exist (then it moves to the user
     profile, and this storage is removed).
   - **Fonts self-hosted** with `@fontsource` packages, so the app makes no third-party font requests.
