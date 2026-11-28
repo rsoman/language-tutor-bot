@@ -20,7 +20,7 @@ inserts the word into the message. On phones it opens as a bottom sheet.
 - Several matches for one query. The API returns one best match or none.
 - Adding the looked-up word to drills (later, with vocabulary specs).
 - Word help outside Conversation (for example in tests). Only the composer has it.
-- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 
 ## Design source
 
@@ -82,7 +82,8 @@ empty. `example` may be null.
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
 
 Scenarios go in `frontend/e2e/features/004-word-help.feature`, word for word. Background as in
-spec 003 (Examplish at L1, Conversation open).
+spec 003 (Examplish at L1, Conversation open). The fake dictionary's example sentence is
+"Example sentence.", translated as "Example translation.".
 
 Shared setup:
 
@@ -129,6 +130,12 @@ Feature: Word help
     Given the learner uses a phone-sized screen
     When the learner opens word help
     Then the word help panel spans the width of the screen
+
+  Scenario: The close button closes word help
+    When the learner opens word help
+    And the learner picks "Close word help"
+    Then the word help panel is not shown
+    And the word help button has focus
 ```
 
 ### Negative
@@ -221,6 +228,8 @@ Backend criteria (pytest, `backend/tests/test_words.py`):
 Component tests (Vitest): the "Looking up…" state; the failure state with "Try again"; a word with
 no features and no example shows only the headword and part of speech; inserting into an empty box
 adds no leading space; the lightbulb's `aria-expanded`.
+
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 ## Non-behavioural criteria
 
