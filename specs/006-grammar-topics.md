@@ -101,7 +101,8 @@ Approved by the owner in a spec-only PR before any code (`docs/conventions/testi
 
 Scenarios go in `frontend/e2e/features/006-grammar-topics.feature`, word for word. The fake API
 offers, for Examplish at L1: "Topic one" (`g-1`, learned 2×, best 8/10, passed), "Topic two"
-(`g-2`, learned 1×, best 5/10), "Topic three" (`g-3`, not started).
+(`g-2`, learned 1×, best 5/10), "Topic three" (`g-3`, not started). For Samplese at S1 it offers one
+topic, "Samplese topic" (`g-s1`, not started).
 
 Shared setup:
 
@@ -148,6 +149,7 @@ Feature: Grammar topics
     And the learner ticks "Topic three"
     And the learner starts the combination test
     Then the address ends with "/grammar/test?topics=g-1,g-3"
+    And the page shows the heading "Combination test"
     And the "Grammar" mode tab is the current page
 
   Scenario: On a phone the combination test bar sits above the tab bar
@@ -278,13 +280,15 @@ In the no-language row the level is any registered level, sent without a `langua
 
 Backend criteria (pytest, `backend/tests/test_grammar.py`):
 
-- [ ] `GET /grammar/topics` with a supported language and level answers 501; an unsupported language or level answers 422.
+- [ ] `GET /grammar/topics` with a supported language and level answers 501 with
+      `{"detail": "Grammar topics are not written yet"}`; an unsupported language or level answers 422.
 - [ ] The OpenAPI schema lists `GrammarTopicOut` with `best_score` nullable.
 - [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 Component tests (Vitest): loading and failure states; the four progress-line forms; a topic's
 example carries `lang`; "Start test · 2 topics" (plural); ticks are cleared when the level changes;
-the not-built-yet placeholder for a lesson link.
+the not-built-yet placeholder for a lesson link; without a chosen language the spec 002 prompt
+shows and no topics are requested.
 
 ## Non-behavioural criteria
 
