@@ -63,7 +63,9 @@ Red (accent) means a mistake, amber (highlight) means help, as on the Cards boar
 - Send is disabled while the input is empty or only spaces, while a reply is pending, and while
   the conversation is starting. The input allows at most 500 characters.
 - If sending fails, the learner's message stays with "Not sent." and a "Try again" button that sends
-  the same text again. If starting fails, the message area says "Couldn't start a conversation."
+  the same text again. While a message shows "Not sent.", the learner can still send new messages;
+  each goes at the end of the list. "Try again" resends the failed message where it stands, and the
+  tutor's reply to it appears at the end. If starting fails, the message area says "Couldn't start a conversation."
   with "Try again".
 - New messages scroll into view. The message list is a `log` region, so screen readers announce
   new messages.
