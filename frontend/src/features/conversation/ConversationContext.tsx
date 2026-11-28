@@ -70,9 +70,16 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     if (!key || !id) return
     try {
       const turn = await sendTurn(id, text)
-      dispatch({ type: 'replied', key, itemId, feedback: turn.feedback, reply: turn.reply })
+      dispatch({
+        type: 'replied',
+        key,
+        conversationId: id,
+        itemId,
+        feedback: turn.feedback,
+        reply: turn.reply,
+      })
     } catch {
-      dispatch({ type: 'sendFailed', key, itemId })
+      dispatch({ type: 'sendFailed', key, conversationId: id, itemId })
     }
   }
 

@@ -28,8 +28,15 @@ export type ConversationAction =
   | { type: 'startFailed'; key: string }
   | { type: 'send'; key: string; itemId: string; text: string }
   | { type: 'resend'; key: string; itemId: string }
-  | { type: 'replied'; key: string; itemId: string; feedback: Feedback[]; reply: TutorMessage }
-  | { type: 'sendFailed'; key: string; itemId: string }
+  | {
+      type: 'replied'
+      key: string
+      conversationId: string
+      itemId: string
+      feedback: Feedback[]
+      reply: TutorMessage
+    }
+  | { type: 'sendFailed'; key: string; conversationId: string; itemId: string }
 
 export const initialState: ConversationState = {
   key: null,
@@ -64,6 +71,14 @@ export function conversationReducer(
     return { key: action.key, status: 'starting', conversationId: null, items: [] }
   }
   if (action.key !== state.key) return state
+  // The same language and level can come back as a new conversation while a reply is in
+  // flight, so an answer to a turn must also belong to the current conversation id.
+  if (
+    (action.type === 'replied' || action.type === 'sendFailed') &&
+    action.conversationId !== state.conversationId
+  ) {
+    return state
+  }
 
   switch (action.type) {
     case 'started':
