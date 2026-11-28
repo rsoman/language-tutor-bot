@@ -144,6 +144,14 @@ Feature: Conversation chat
     Then the Send button is disabled
     And the page shows "Tutor is typing"
 
+  Scenario: Try again is disabled while the tutor is replying
+    Given sending will fail once
+    And the tutor is slow to reply
+    When the learner opens Conversation
+    And the learner sends "First message"
+    And the learner sends "Second message"
+    Then the "Try again" button is disabled
+
   Scenario: A message stops at 500 characters
     When the learner opens Conversation
     And the learner types 501 characters

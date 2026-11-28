@@ -136,14 +136,16 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
       await page.route('**/api/conversations/*/turns', async (route) => {
         const body = route.request().postDataJSON() as { message: string }
         api.receivedMessages.push(body.message)
-        if (api.slowReply) {
-          await slowDone
-          await route.abort().catch(() => {})
-          return
-        }
+        // Failures come first, so "fail once" and "slow" combine: the first turn fails at once,
+        // the next ones hang.
         if (api.turnFailuresLeft > 0) {
           api.turnFailuresLeft -= 1
           await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        if (api.slowReply) {
+          await slowDone
+          await route.abort().catch(() => {})
           return
         }
         await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })

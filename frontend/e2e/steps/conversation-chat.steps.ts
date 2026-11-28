@@ -292,3 +292,7 @@ Then('the last {string} is in view', async ({ page }, text: string) => {
   await expect(messageLog(page).getByText(text, { exact: true })).toHaveCount(8)
   await expect(last).toBeInViewport()
 })
+
+Then('the {string} button is disabled', async ({ page }, label: string) => {
+  await expect(messageLog(page).getByRole('button', { name: label })).toBeDisabled()
+})
