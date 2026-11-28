@@ -20,7 +20,7 @@ inserts the word into the message. On phones it opens as a bottom sheet.
 - Several matches for one query. The API returns one best match or none.
 - Adding the looked-up word to drills (later, with vocabulary specs).
 - Word help outside Conversation (for example in tests). Only the composer has it.
-- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
+- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
 
 ## Design source
 
@@ -193,7 +193,7 @@ Feature: Word lookup API contract
       Examples:
         | language                | level                    | status |
         | a supported language    | one of its levels        | 501    |
-        | an unsupported language | any level                | 422    |
+        | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
 
   Scenario Outline: A query is 1 to 60 characters and not only spaces
@@ -213,7 +213,7 @@ Feature: Word lookup API contract
 Backend criteria (pytest, `backend/tests/test_words.py`):
 
 - [ ] A valid lookup answers 501.
-- [ ] An unsupported language, a level outside the language, an empty query, a query of only spaces, or a query over 60 characters answers 422.
+- [ ] An unsupported language, a level outside the language, an empty query, a query of only spaces, or a query over 60 characters answers 422. Surrounding spaces are stripped before the 1 to 60 check.
 - [ ] The OpenAPI schema lists the lookup's parameters `language`, `level` and `query`. (The response
       model is Ravi's; this criterion replaced "lists `WordOut` with `features` as a list of
       `{name, value}`" after his decision on 2026-11-27.)
