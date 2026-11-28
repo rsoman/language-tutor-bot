@@ -1,6 +1,6 @@
 # 0004: Generate frontend types and Zod schemas with orval
 
-- **Status:** proposed
+- **Status:** accepted (2026-11-28, PR #15)
 - **Date:** 2026-11-28
 - **Supersedes:** none
 

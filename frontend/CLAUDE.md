@@ -4,6 +4,7 @@ Loaded when Claude works on files under `frontend/`. Read the root `CLAUDE.md` f
 
 - Stack: React + TypeScript (strict) + Vite, pnpm. Run commands from `frontend/`.
 - Checks before a push: `pnpm lint && pnpm typecheck && pnpm test`, plus `pnpm e2e` for UI changes.
+  `pnpm test:coverage` writes `coverage/lcov.info` for the changed-lines coverage gate.
 - Before building or changing a screen, check `docs/design/` and the design canvas linked there.
   Accepted design records are rules, not suggestions.
 - API Zod schemas are generated with orval (`bash scripts/export-openapi.sh`, ADR 0004), and types
