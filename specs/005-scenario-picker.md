@@ -19,7 +19,7 @@ Picking one starts a new conversation in that scenario.
   Ravi's part; the endpoint answers 501.
 - Filtering or searching scenarios.
 - Scenarios in modes other than Conversation.
-- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005. The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 
 ## Design source
 
