@@ -1,6 +1,6 @@
 # 0003: Neon Auth for sign-in
 
-- **Status:** proposed
+- **Status:** accepted (2026-11-28)
 - **Date:** 2026-11-28
 - **Supersedes:** none
 

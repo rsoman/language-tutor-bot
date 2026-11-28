@@ -1,6 +1,6 @@
 # 0002: Neon Postgres as the database
 
-- **Status:** proposed
+- **Status:** accepted (2026-11-28)
 - **Date:** 2026-11-28
 - **Supersedes:** none
 
