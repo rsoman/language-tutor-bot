@@ -18,7 +18,7 @@ only as a typed contract that answers 501 until Ravi writes the logic.
 ## Out of scope
 
 - The tutor's logic: prompts, LLM calls, deciding what feedback to give. Hand-written by Ravi.
-- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
+- Authentication and rate limits, while the endpoints only answer 501. They sit on the public allowlist under ADR 0005 (accepted in principle by the owner, 2026-11-28). The ADR's guard test fails if an allowlisted route answers anything but 501, so these endpoints cannot gain real logic without auth, 401 and 403 tests, and (for LLM endpoints) a per-user rate limit.
 - Word help (the lightbulb popover): spec 004.
 - Scenarios (the "Scenario: … · Change" chip and the picker): spec 005. Conversations here have no scenario.
 - Streaming replies token by token. A reply arrives whole. Streaming can be a later spec once the
@@ -119,7 +119,8 @@ land, the frontend switches to generated types (`pnpm gen:api`) and deletes `tut
 - `corrected_sentence` is a list of segments, so the frontend never computes spans from character
   offsets. Joining the segments' `text` gives the full corrected sentence (D0001).
 - Errors: `422` when `language` is not supported, `level` is not one of that language's levels,
-  or `message` is empty, only spaces, or over 500 characters. `404` for an unknown conversation id (once the logic exists).
+  or `message` is empty, only spaces, or over 500 characters. Surrounding spaces are stripped before
+  the length check. `404` for an unknown conversation id (once the logic exists).
 
 ## Test scenarios
 
@@ -288,7 +289,7 @@ Feature: Conversation API contract
 
 ### Below the UI: backend and component tests
 
-Backend criteria (pytest, `backend/tests/test_conversations.py`; a BDD feature is not needed for a stub):
+Backend criteria (pytest, `backend/tests/test_conversations.py`; the contract cases are also in the API feature above):
 
 - [ ] `POST /conversations` with a supported language and level answers 501.
 - [ ] `POST /conversations` with an unsupported language, or a level outside that language's levels, answers 422.
@@ -300,6 +301,8 @@ Backend criteria (pytest, `backend/tests/test_conversations.py`; a BDD feature i
 Component tests (Vitest) cover: each card kind's heading and colour class; the corrected sentence
 renders changed segments in `<strong>`; Enter sends and Shift+Enter does not; the 500-character
 limit; the "Tutor is typing" indicator; the start error with "Try again".
+
+- [ ] The ADR 0005 guard test covers these routes: each answers 501 to valid input while it is on the public allowlist.
 
 ## Non-behavioural criteria
 
