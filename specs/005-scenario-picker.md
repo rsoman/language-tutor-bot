@@ -19,7 +19,7 @@ Picking one starts a new conversation in that scenario.
   Ravi's part; the endpoint answers 501.
 - Filtering or searching scenarios.
 - Scenarios in modes other than Conversation.
-- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
+- Authentication and rate limits, while the endpoints only answer 501. They go on the public allowlist until the auth spec (ADR 0003) adds auth with 401 and 403 scenarios. This is a proposed exception to `docs/conventions/security.md`, for the owner to accept: the PR that gives these endpoints real logic cannot merge without auth, its 401 and 403 tests, and a per-user rate limit.
 
 ## Design source
 
@@ -187,6 +187,13 @@ Feature: Scenario picker
     And the learner picks the scenario "Cafe scene"
     And the learner changes the level to "L2"
     Then the scenario chip reads "Free conversation · Choose a scenario"
+
+  Scenario: Changing the language clears the scenario
+    When the learner opens Conversation
+    And the learner opens the scenario page
+    And the learner picks the scenario "Cafe scene"
+    And the learner changes the language to "Samplese"
+    Then the scenario chip reads "Free conversation · Choose a scenario"
 ```
 
 ### API (backend)
@@ -202,7 +209,7 @@ Feature: Scenarios API contract
       Examples:
         | language                | level                    | status |
         | a supported language    | one of its levels        | 501    |
-        | an unsupported language | any level                | 422    |
+        | an unsupported language | any level (ignored)      | 422    |
         | a supported language    | a level it does not have | 422    |
 
   Scenario: A conversation can start in a scenario
