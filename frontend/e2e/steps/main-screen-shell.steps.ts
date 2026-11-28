@@ -46,8 +46,19 @@ Given('the learner has not chosen a language', async ({ fakeApi }) => {
 Given(
   'the learner has chosen {string} at level {string}',
   async ({ page, fakeApi }, language: string, level: string) => {
-    expect(fakeApi.languages.length).toBeGreaterThan(0)
-    await chooseLanguage(page, language, level)
+    const offered = fakeApi.languages.find((l) => l.name === language)
+    expect(offered).toBeDefined()
+    if (offered?.levels.some((l) => l.code === level)) {
+      await chooseLanguage(page, language, level)
+      return
+    }
+    // A level the API does not offer cannot be picked in the UI, so save it the way an
+    // earlier visit would have (spec 002: a saved level that is no longer offered).
+    await page.goto('/')
+    await page.evaluate(([key, value]) => localStorage.setItem(key, value), [
+      STORAGE_KEY,
+      JSON.stringify({ code: offered?.code, level }),
+    ] as const)
   },
 )
 

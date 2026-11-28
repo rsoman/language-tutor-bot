@@ -64,6 +64,7 @@ describe('LanguagePicker', () => {
     expect(JSON.parse(localStorage.getItem('vaikhari.languageChoice') ?? 'null')).toEqual({
       code: 'yy',
       level: 'S1',
+      levels: { yy: 'S1' },
     })
   })
 

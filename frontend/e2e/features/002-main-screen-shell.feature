@@ -52,6 +52,24 @@ Feature: Main screen shell
     Then the level group is labelled "Level (TEST)"
     And the levels offered are "L1, L2"
 
+  Scenario: Switching back to a language keeps its current level
+    Given the learner has chosen "Examplish" at level "L2"
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Samplese"
+    And the learner picks the language "Examplish"
+    Then the level "L2" is selected
+
+  Scenario: Each language's current level is remembered after a reload
+    Given the learner has chosen "Examplish" at level "L2"
+    When the learner opens the app
+    And the learner opens the language picker
+    And the learner picks the language "Samplese"
+    And the learner reloads the app
+    And the learner opens the language picker
+    And the learner picks the language "Examplish"
+    Then the level "L2" is selected
+
   Scenario: The chosen language is remembered after a reload
     Given the learner has chosen "Examplish" at level "L1"
     When the learner reloads the app
@@ -87,6 +105,11 @@ Feature: Main screen shell
     Given the learner has not chosen a language
     When the learner opens the app at "/no-such-page"
     Then the address ends with "/conversation"
+
+  Scenario: A saved level the language no longer offers falls back to its easiest level
+    Given the learner has chosen "Examplish" at level "L9"
+    When the learner opens the app
+    Then the language button reads "Examplish · L1"
 
   Scenario: A saved language that is no longer offered is ignored
     Given the learner has chosen "Examplish" at level "L1"
