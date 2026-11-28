@@ -46,3 +46,12 @@ describe('Composer', () => {
     expect(screen.getByRole('button', { name: 'Send' })).toBeDisabled()
   })
 })
+
+describe('Composer word help', () => {
+  test('an inserted word goes into an empty box without a leading space', async () => {
+    const { appendWord } = await import('./Composer')
+    expect(appendWord('', 'the-word')).toBe('the-word')
+    expect(appendWord('I want', 'the-word')).toBe('I want the-word')
+    expect(appendWord('I want ', 'the-word')).toBe('I want the-word')
+  })
+})

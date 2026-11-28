@@ -2,17 +2,27 @@
 // The Zod schemas in generated/schemas.ts come from the backend's OpenAPI schema
 // (`pnpm gen:api`, ADR 0004). Never edit them by hand. Responses with a generated schema are
 // parsed with it, so a response with the wrong shape fails like any other failed request.
-// Exception: the tutor's output types are hand-written in tutorTypes.ts until the owner's
-// backend models exist.
+// Exception: the tutor's output and word lookup types are hand-written in tutorTypes.ts
+// until the owner's backend models exist.
 import type { z } from 'zod'
 
 import { LanguagesLanguagesGetResponse } from './generated/schemas'
-import type { Conversation, Turn } from './tutorTypes'
+import type { Conversation, Turn, Word } from './tutorTypes'
 
-export type { Conversation, Feedback, Segment, TutorMessage, Turn } from './tutorTypes'
+export type { Conversation, Feedback, Segment, TutorMessage, Turn, Word } from './tutorTypes'
 
 export type Language = z.infer<typeof LanguagesLanguagesGetResponse>[number]
 export type Level = Language['levels'][number]
+
+/** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
 
 // In development Vite forwards /api/* to the FastAPI app (see vite.config.ts).
 function apiUrl(path: string): string {
@@ -22,7 +32,7 @@ function apiUrl(path: string): string {
 async function getJson(path: string): Promise<unknown> {
   const response = await fetch(apiUrl(path))
   if (!response.ok) {
-    throw new Error(`GET ${path} failed with status ${response.status}`)
+    throw new ApiError(`GET ${path} failed with status ${response.status}`, response.status)
   }
   return response.json()
 }
@@ -34,7 +44,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   })
   if (!response.ok) {
-    throw new Error(`POST ${path} failed with status ${response.status}`)
+    throw new ApiError(`POST ${path} failed with status ${response.status}`, response.status)
   }
   return (await response.json()) as T
 }
@@ -49,4 +59,10 @@ export function startConversation(language: string, level: string): Promise<Conv
 
 export function sendTurn(conversationId: string, message: string): Promise<Turn> {
   return postJson<Turn>(`/conversations/${encodeURIComponent(conversationId)}/turns`, { message })
+}
+
+export async function lookupWord(language: string, level: string, query: string): Promise<Word> {
+  const params = new URLSearchParams({ language, level, query })
+  // Word is the owner's hand-written shape until his model lands (react.md exception).
+  return (await getJson(`/words/lookup?${params.toString()}`)) as Word
 }

@@ -61,3 +61,21 @@ export const TakeTurnConversationsConversationIdTurnsPostBody = zod.object({
 })
 
 export const TakeTurnConversationsConversationIdTurnsPostResponse = zod.unknown()
+
+
+/**
+ * Looks up one word. 404 when nothing matches (once the logic exists).
+ * @summary Lookup Word
+ */
+export const lookupWordWordsLookupGetQueryQueryMin = 1;
+export const lookupWordWordsLookupGetQueryQueryMax = 60;
+
+
+
+export const LookupWordWordsLookupGetQueryParams = zod.object({
+  "language": zod.string().describe('Language code from GET /languages, e.g. \'xx\''),
+  "level": zod.string().describe('One of that language\'s levels'),
+  "query": zod.string().min(lookupWordWordsLookupGetQueryQueryMin).max(lookupWordWordsLookupGetQueryQueryMax)
+})
+
+export const LookupWordWordsLookupGetResponse = zod.unknown()

@@ -135,6 +135,71 @@
           }
         }
       }
+    },
+    "/words/lookup": {
+      "get": {
+        "tags": [
+          "words"
+        ],
+        "summary": "Lookup Word",
+        "description": "Looks up one word. 404 when nothing matches (once the logic exists).",
+        "operationId": "lookup_word_words_lookup_get",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Language code from GET /languages, e.g. 'xx'",
+              "title": "Language"
+            },
+            "description": "Language code from GET /languages, e.g. 'xx'"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "One of that language's levels",
+              "title": "Level"
+            },
+            "description": "One of that language's levels"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60,
+              "title": "Query"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
