@@ -18,6 +18,7 @@ only as a typed contract that answers 501 until Ravi writes the logic.
 ## Out of scope
 
 - The tutor's logic: prompts, LLM calls, deciding what feedback to give. Hand-written by Ravi.
+- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
 - Word help (the lightbulb popover): spec 004.
 - Scenarios (the "Scenario: … · Change" chip and the picker): spec 005. Conversations here have no scenario.
 - Streaming replies token by token. A reply arrives whole. Streaming can be a later spec once the
@@ -118,13 +119,11 @@ land, the frontend switches to generated types (`pnpm gen:api`) and deletes `tut
 - `corrected_sentence` is a list of segments, so the frontend never computes spans from character
   offsets. Joining the segments' `text` gives the full corrected sentence (D0001).
 - Errors: `422` when `language` is not supported, `level` is not one of that language's levels,
-  or `message` is empty or over 500 characters. `404` for an unknown conversation id (once the logic exists).
+  or `message` is empty, only spaces, or over 500 characters. `404` for an unknown conversation id (once the logic exists).
 
 ## Test scenarios
 
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
-The scenarios keep their earlier wording, so the feature file still matches them line for
-line; this version only groups them. The code PR adds the `@smoke` tag to the feature file.
 
 Frontend scenarios go in `frontend/e2e/features/003-conversation-chat.feature`, word for word.
 The fake API answers with fixed made-up text in fake languages; the steps choose "Examplish" at "L1".
@@ -190,6 +189,14 @@ Feature: Conversation chat
     Given the learner uses a phone-sized screen
     When the learner opens Conversation
     Then the message box is just above the mode tabs
+
+  Scenario: A word the learner already learned gets a reminder
+    Given the tutor will mark a known word: "apple" is "the-apple" in "I eat the-apple."
+    When the learner opens Conversation
+    And the learner sends "I eat apple."
+    Then a card headed "You've seen this one" is shown
+    And the card says "Moved up in your drills"
+    And the card ends with the sentence "I eat the-apple." with "the-apple" in bold
 ```
 
 ### Negative
@@ -203,9 +210,15 @@ Feature: Conversation chat
     Then the message "My message" is marked "Not sent."
     When the learner picks "Try again"
     Then the tutor says "Reply line"
-```
 
-Component test: the start error with "Try again".
+  Scenario: The learner can retry when the conversation fails to start
+    Given starting will fail once
+    And the tutor will open with "Opening line" translated as "Opening translation"
+    When the learner opens Conversation
+    Then the page shows "Couldn't start a conversation."
+    When the learner picks "Try again"
+    Then the tutor says "Opening line"
+```
 
 ### Edge cases
 
@@ -215,11 +228,49 @@ Component test: the start error with "Try again".
     Then the Send button is disabled
     When the learner types "   "
     Then the Send button is disabled
+
+  Scenario: Send is disabled while the tutor is replying
+    Given the tutor is slow to reply
+    When the learner opens Conversation
+    And the learner sends "My message"
+    Then the Send button is disabled
+    And the page shows "Tutor is typing"
+
+  Scenario: A message stops at 500 characters
+    When the learner opens Conversation
+    And the learner types 501 characters
+    Then the message box holds 500 characters
 ```
 
-Component tests: the 500-character limit; Shift+Enter does not send.
+Component tests added with the race fix (2026-11-28): a late failure from an older start does not fail a newer start for the same level; a late success from an older start does not replace a newer start for the same level. They stay component tests: the timing cannot be set up reliably in a browser test.
 
-Component tests added with the race fix on 2026-11-28 (new here, for approval): a late failure from an older start does not fail a newer start for the same level; a late success from an older start does not replace a newer start for the same level.
+### API (backend)
+
+These go in `backend/tests/features/003-conversation-chat.feature` (pytest-bdd). The endpoints are stubs, so a valid request answers 501 until the owner writes the logic. The steps pick a supported language and its levels come from the language registry, so no real language is named.
+
+```gherkin
+Feature: Conversation API contract
+
+  Scenario Outline: A conversation needs a supported language and level
+    When a client starts a conversation in <language> at <level>
+    Then the API answers <status>
+      Examples:
+        | language                | level                    | status |
+        | a supported language    | one of its levels        | 501    |
+        | an unsupported language | any level                | 422    |
+        | a supported language    | a level it does not have | 422    |
+
+  Scenario Outline: A turn message is 1 to 500 characters and not only spaces
+    When a client sends a turn with <message>
+    Then the API answers <status>
+      Examples:
+        | message            | status |
+        | the text "Hello"   | 501    |
+        | an empty message   | 422    |
+        | only spaces        | 422    |
+        | 500 characters     | 501    |
+        | 501 characters     | 422    |
+```
 
 ### Below the UI: backend and component tests
 
@@ -227,7 +278,7 @@ Backend criteria (pytest, `backend/tests/test_conversations.py`; a BDD feature i
 
 - [ ] `POST /conversations` with a supported language and level answers 501.
 - [ ] `POST /conversations` with an unsupported language, or a level outside that language's levels, answers 422.
-- [ ] `POST /conversations/{id}/turns` with an empty message, or one over 500 characters, answers 422; a valid one answers 501.
+- [ ] `POST /conversations/{id}/turns` with an empty message, one of only spaces, or one over 500 characters, answers 422; a valid one answers 501.
 - [ ] The OpenAPI schema lists the request models `ConversationIn` and `TurnIn`. (The response models
       are Ravi's; this criterion replaced "lists `ConversationOut`, `TurnOut` and `FeedbackOut`" after
       his decision on 2026-11-26.)
@@ -236,17 +287,9 @@ Component tests (Vitest) cover: each card kind's heading and colour class; the c
 renders changed segments in `<strong>`; Enter sends and Shift+Enter does not; the 500-character
 limit; the "Tutor is typing" indicator; the start error with "Try again".
 
-### Gaps for the owner to decide
-
-Not covered by any scenario or test yet. Say which to add; each one added becomes a
-scenario here and a red test in the code PR.
-
-- The backend accepts a message of only spaces (`min_length=1` counts spaces). The UI blocks it, but the API does not. Should the API strip and reject it (422)?
-- The learner presses Send twice quickly: one message or two?
-- The "word already learned" card (D0002's fourth kind) has only a component test, no scenario.
-
 ## Non-behavioural criteria
 
+- [ ] Lint, format, types, build and tests pass in CI.
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm e2e`, and the backend's ruff, pyright and pytest pass.
 - [ ] No real language in frontend code or tests (guard test from spec 002 still passes).
 - [ ] axe finds no violations in Conversation with messages and all four card kinds, at all three breakpoints.
