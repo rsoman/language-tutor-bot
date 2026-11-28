@@ -65,8 +65,9 @@ Red (accent) means a mistake, amber (highlight) means help, as on the Cards boar
 - If sending fails, the learner's message stays with "Not sent." and a "Try again" button that sends
   the same text again. While a message shows "Not sent.", the learner can still send new messages;
   each goes at the end of the list. "Try again" resends the failed message where it stands, and the
-  tutor's reply to it appears at the end. If starting fails, the message area says "Couldn't start a conversation."
-  with "Try again".
+  tutor's reply to it appears at the end. Like Send, "Try again" is disabled while a reply is
+  pending, so two replies never race. If starting fails, the message area says "Couldn't start a
+  conversation." with "Try again".
 - New messages scroll into view. The message list is a `log` region, so screen readers announce
   new messages.
 
@@ -292,6 +293,14 @@ Feature: Conversation chat
     And the learner sends "My message"
     Then the Send button is disabled
     And the page shows "Tutor is typing"
+
+  Scenario: Try again is disabled while the tutor is replying
+    Given sending will fail once
+    And the tutor is slow to reply
+    When the learner opens Conversation
+    And the learner sends "First message"
+    And the learner sends "Second message"
+    Then the "Try again" button is disabled
 
   Scenario: A message stops at 500 characters
     When the learner opens Conversation

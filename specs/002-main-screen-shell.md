@@ -79,8 +79,9 @@ The app name comes from one config value (`src/config.ts`, `appName`). No compon
   from the API, never by name and never by the order the API sends them. Picking a language
   selects that language's current level: the level the learner last chose for it. A language the
   learner has not chosen before, or whose saved level it no longer offers, starts at its easiest
-  level; a language with one level therefore has that level selected. The learner can change it. A "Done" button and the Escape key close it and return
-  focus to the pill. While it is open, Tab and Shift+Tab stay inside it.
+  level; a language with one level therefore has that level selected. The learner can change it.
+  A "Done" button and the Escape key close it and return focus to the pill. While it is open, Tab
+  and Shift+Tab stay inside it.
 - Once picked, the pill reads `<name> · <level>` on tablet and desktop and
   `<CODE> · <level>` on mobile. The choice is saved in `localStorage` and restored on reload,
   together with the current level of each language the learner has chosen. A choice saved in the
@@ -353,7 +354,8 @@ Backend unit tests (pytest, `backend/tests/test_languages.py`):
 - [ ] A `LanguageProfile` with no levels is rejected.
 
 Component and unit tests (Vitest) cover what would make the feature file noisy: the picker's
-keyboard behaviour, the `localStorage` read and write helpers (including reading a choice saved in the earlier shape), the loading state, and that the logo SVG has no hard-coded hex.
+keyboard behaviour, the `localStorage` read and write helpers (including reading a choice saved
+in the earlier shape), the loading state, and that the logo SVG has no hard-coded hex.
 
 ## Non-behavioural criteria
 
