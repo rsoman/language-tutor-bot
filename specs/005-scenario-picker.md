@@ -4,9 +4,9 @@
 - **Owner:** Claude-generated (frontend, Pydantic models, routers that answer 501). Scenario content,
   recommendations and progress are hand-written by Ravi.
 - **Phase:** 1
-- **Builds on:** spec 004, word help (spec-only PR #17, not merged yet; code in PR #5), and
-  spec 003's `ConversationIn` (spec-only PR #16, not merged yet). Specs 003 and 004 merge before
-  this one.
+- **Builds on:** spec 004, word help (spec-only PR #17; code in PR #5), and
+  spec 003's `ConversationIn` (spec-only PR #16), both merged 2026-11-28. Also spec 002 as amended
+  in #23 (merged): a language change selects that language's current level.
 
 ## Goal
 
