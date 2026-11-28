@@ -20,6 +20,7 @@ inserts the word into the message. On phones it opens as a bottom sheet.
 - Several matches for one query. The API returns one best match or none.
 - Adding the looked-up word to drills (later, with vocabulary specs).
 - Word help outside Conversation (for example in tests). Only the composer has it.
+- Authentication. These endpoints are public until the auth spec lands (ADR 0003); that spec adds auth to them with 401 and 403 scenarios (`docs/conventions/security.md`).
 
 ## Design source
 
@@ -79,8 +80,6 @@ empty. `example` may be null.
 ## Test scenarios
 
 Approved by the owner in a spec-only PR before any code (`docs/conventions/testing.md`).
-The scenarios keep their earlier wording, so the feature file still matches them line for
-line; this version only groups them. The code PR adds the `@smoke` tag to the feature file.
 
 Scenarios go in `frontend/e2e/features/004-word-help.feature`, word for word. Background as in
 spec 003 (Examplish at L1, Conversation open).
@@ -139,22 +138,82 @@ Feature: Word help
     When the learner opens word help
     And the learner looks up "blorp"
     Then the word help shows 'No match for "blorp".'
-```
 
-Backend: an unsupported language, a level outside the language, an empty query, or a query over 60 characters answers 422 (listed below). Component test: the failure state with "Try again".
+  Scenario: The learner can retry a failed lookup
+    Given the word lookup will fail once
+    When the learner opens word help
+    And the learner looks up "coffee"
+    Then the word help shows "Couldn't look that up."
+    When the learner picks "Try again"
+    Then the word help shows "the-coffee"
+```
 
 ### Edge cases
 
-No Gherkin scenario. Component tests: a word with no features and no example shows only the headword and part of speech; inserting into an empty box adds no leading space.
+```gherkin
+  Scenario: A word with no features or example shows only its headword
+    Given the dictionary knows "blue" as "the-blue", an "adjective" with no features and no example
+    When the learner opens word help
+    And the learner looks up "blue"
+    Then the word help shows "the-blue"
+    And the word help shows "adjective"
+    And the word help shows no example sentence
 
-Component test added with the race fix on 2026-11-28 (new here, for approval): a slow answer for an earlier word does not replace the answer for the newer word.
+  Scenario: A word inserted into an empty message has no leading space
+    When the learner opens word help
+    And the learner looks up "coffee"
+    And the learner inserts the word into the message
+    Then the message box contains exactly "the-coffee"
+
+  Scenario: A query of only spaces is not looked up
+    When the learner opens word help
+    And the learner looks up "   "
+    Then no word lookup was sent
+
+  Scenario: A slow answer for an earlier word is ignored
+    Given the dictionary knows "tea" as "the-tea", a "noun" with "gender" "neuter" and "plural" "the-teas"
+    And the dictionary answers "coffee" slowly
+    When the learner opens word help
+    And the learner looks up "coffee"
+    And the learner looks up "tea"
+    Then the word help shows "the-tea"
+    And the word help does not show "the-coffee"
+```
+
+### API (backend)
+
+These go in `backend/tests/features/004-word-help.feature` (pytest-bdd). The endpoints are stubs, so a valid request answers 501 until the owner writes the logic. The steps pick a supported language and its levels come from the language registry, so no real language is named.
+
+```gherkin
+Feature: Word lookup API contract
+
+  Scenario Outline: A lookup needs a supported language and level
+    When a client looks up "coffee" in <language> at <level>
+    Then the API answers <status>
+      Examples:
+        | language                | level                    | status |
+        | a supported language    | one of its levels        | 501    |
+        | an unsupported language | any level                | 422    |
+        | a supported language    | a level it does not have | 422    |
+
+  Scenario Outline: A query is 1 to 60 characters and not only spaces
+    When a client looks up <query> in a supported language at one of its levels
+    Then the API answers <status>
+      Examples:
+        | query             | status |
+        | the word "coffee" | 501    |
+        | an empty query    | 422    |
+        | only spaces       | 422    |
+        | 60 characters     | 501    |
+        | 61 characters     | 422    |
+```
 
 ### Below the UI: backend and component tests
 
 Backend criteria (pytest, `backend/tests/test_words.py`):
 
 - [ ] A valid lookup answers 501.
-- [ ] An unsupported language, a level outside the language, an empty query, or a query over 60 characters answers 422.
+- [ ] An unsupported language, a level outside the language, an empty query, a query of only spaces, or a query over 60 characters answers 422.
 - [ ] The OpenAPI schema lists the lookup's parameters `language`, `level` and `query`. (The response
       model is Ravi's; this criterion replaced "lists `WordOut` with `features` as a list of
       `{name, value}`" after his decision on 2026-11-27.)
@@ -163,17 +222,9 @@ Component tests (Vitest): the "Looking up…" state; the failure state with "Try
 no features and no example shows only the headword and part of speech; inserting into an empty box
 adds no leading space; the lightbulb's `aria-expanded`.
 
-### Gaps for the owner to decide
-
-Not covered by any scenario or test yet. Say which to add; each one added becomes a
-scenario here and a red test in the code PR.
-
-- A query of only spaces: the UI trims it and sends nothing, but the API answers 501 (not 422), because `min_length=1` counts spaces. Should the API strip the query and answer 422?
-- A query of exactly 60 characters is accepted and 61 is rejected (boundary test, backend).
-- Looking up while the previous lookup is still loading, as a scenario (today only the component test above).
-
 ## Non-behavioural criteria
 
+- [ ] Lint, format, types, build and tests pass in CI.
 - [ ] All frontend and backend checks pass; axe finds no violations with word help open, with a result, at all three breakpoints.
 - [ ] No real language in frontend code or tests.
 - [ ] At least 80% of changed lines covered.
