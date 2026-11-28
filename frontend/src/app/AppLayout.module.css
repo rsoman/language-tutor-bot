@@ -1,0 +1,23 @@
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile first: on phones the mode tabs are a fixed bar at the bottom (D0004),
+   so <main> leaves room for it. */
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: calc(var(--content-max-width) + 2 * var(--space-4));
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4) calc(56px + var(--space-6));
+}
+
+/* Tablet and desktop: 40px side margins, tabs are back under the header. */
+@media (min-width: 640px) {
+  .main {
+    max-width: calc(var(--content-max-width) + 2 * var(--space-6));
+    padding: var(--space-4) var(--space-6) var(--space-6);
+  }
+}

@@ -35,7 +35,7 @@ Exempt: pure docs, formatting, dependency bumps and config without behaviour. Sa
 |---|---|---|---|
 | Unit and component | One function, model or component | pytest (`tests/test_*.py`) | Vitest + Testing Library + MSW |
 | Contract | API schema matches both sides | Schema drift check in CI | Zod validation of responses |
-| Acceptance (BDD) | The spec's scenarios, through the public API or UI | pytest-bdd (`tests/features/*.feature`) | Playwright + playwright-bdd |
+| Acceptance (BDD) | The spec's scenarios, through the public API or UI | pytest-bdd (`tests/features/*.feature`) | Playwright + playwright-bdd (`frontend/e2e/features/*.feature`, steps in `frontend/e2e/steps/`) |
 | Accessibility | WCAG 2.1 AA | n/a | axe (`@axe-core/playwright`) |
 | Evals | AI behaviour quality | Owner's choice (later) | n/a |
 
@@ -64,5 +64,9 @@ feature, so sanity stays under about 5 minutes.
   a fixed locale, so i18n does not break them.
 - Never skip, disable or quarantine a test to get green.
 
-Reference example: `backend/tests/features/health.feature` and
-`backend/tests/bdd/test_health_feature.py`.
+Reference examples: `backend/tests/features/health.feature` with
+`backend/tests/bdd/test_health_feature.py`, and `frontend/e2e/features/002-main-screen-shell.feature`
+with `frontend/e2e/steps/`.
+
+Frontend tests never call the backend: Vitest uses MSW (`src/test/server.ts`), Playwright uses
+`page.route` (`e2e/steps/fixtures.ts`).

@@ -1,0 +1,18 @@
+.panel {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+}
+
+.heading {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.text {
+  margin: var(--space-2) 0 0;
+  color: var(--color-muted);
+}

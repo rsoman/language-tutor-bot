@@ -1,6 +1,6 @@
 # 002: Main screen shell (frontend)
 
-- **Status:** draft (scenarios for the owner's approval in a spec-only PR, 2026-11-28; code in PR #3)
+- **Status:** approved (owner, PR #15, 2026-11-28); code in PR #3
 - **Owner:** Claude-generated
 - **Phase:** 1
 
