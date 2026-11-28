@@ -57,7 +57,7 @@ Pipelines are listed in `testing.md`. Workflows live in `.github/workflows/`:
 
 - `ci.yml`: sanity checks on every PR, regression on `main`.
 - `codeql.yml`: static analysis.
-- `review.yml`: the reviewer agent (`review.md`).
+- `review.yml`: the reviewer agent (`review.md`), on open, ready for review, and the `re-review` label.
 
 ## Deployment
 
