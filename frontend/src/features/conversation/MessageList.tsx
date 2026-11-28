@@ -47,7 +47,13 @@ export function MessageList({ items, languageCode, tutorTyping, onResend }: Mess
               {item.status === 'failed' && (
                 <p className={styles.failed}>
                   Not sent.{' '}
-                  <button type="button" className={styles.retry} onClick={() => onResend(item.id)}>
+                  {/* Like Send, disabled while a reply is pending, so two replies never race. */}
+                  <button
+                    type="button"
+                    className={styles.retry}
+                    disabled={tutorTyping}
+                    onClick={() => onResend(item.id)}
+                  >
                     Try again
                   </button>
                 </p>

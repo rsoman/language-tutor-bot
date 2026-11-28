@@ -76,6 +76,11 @@
   cursor: pointer;
 }
 
+.retry:disabled {
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
 .typing {
   margin: 0;
   display: flex;
