@@ -19,6 +19,25 @@ export const fakeScenarios = [
   },
 ]
 
+export const fakeGrammarTopics = [
+  {
+    id: 'g-1',
+    title: 'Topic one',
+    example: 'Example one',
+    times_learned: 1,
+    best_score: { correct: 9, total: 10 },
+    passed: true,
+  },
+  {
+    id: 'g-2',
+    title: 'Topic two',
+    example: 'Example two',
+    times_learned: 0,
+    best_score: null,
+    passed: false,
+  },
+]
+
 export const server = setupServer(
   http.get('*/api/languages', () => HttpResponse.json([EXAMPLISH, SAMPLESE])),
   http.post('*/api/conversations', () =>
@@ -28,6 +47,7 @@ export const server = setupServer(
     ),
   ),
   http.get('*/api/scenarios', () => HttpResponse.json(fakeScenarios)),
+  http.get('*/api/grammar/topics', () => HttpResponse.json(fakeGrammarTopics)),
   http.post('*/api/conversations/:id/turns', () =>
     HttpResponse.json({ feedback: [], reply: { text: 'Fake reply', translation: null } }),
   ),

@@ -39,5 +39,7 @@
   --content-max-width: 760px;
   --header-height-desktop: 72px;
   --header-height-mobile: 56px;
+  /* Bottom tab bar on phones: 56px tabs plus its 1px top border. Pinned things sit above it. */
+  --tab-bar-height: 57px;
   --touch-target: 44px;
 }

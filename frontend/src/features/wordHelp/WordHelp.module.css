@@ -22,7 +22,7 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(56px + env(safe-area-inset-bottom));
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
   z-index: 30;
   padding: 18px var(--space-4);
   border-radius: 16px 16px 0 0;

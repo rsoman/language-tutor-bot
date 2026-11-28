@@ -67,6 +67,15 @@ export type FakeScenario = {
   last_result: string | null
 }
 
+export type FakeGrammarTopic = {
+  id: string
+  title: string
+  example: string
+  times_learned: number
+  best_score: { correct: number; total: number } | null
+  passed: boolean
+}
+
 export type FakeApi = {
   languages: FakeLanguage[]
   /** How many of the next /api/languages requests should fail with a 500. */
@@ -83,6 +92,7 @@ export type FakeApi = {
   scenarios: FakeScenario[]
   /** The scenario_id of every POST /api/conversations, in order (null for none). */
   conversationScenarios: (string | null)[]
+  grammarTopics: FakeGrammarTopic[]
   /** When true, /api/languages answers with JSON of the wrong shape. */
   wrongShape: boolean
   /** When true, /api/languages does not answer until the scenario ends. */
@@ -104,6 +114,7 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         dictionary: {},
         scenarios: [],
         conversationScenarios: [],
+        grammarTopics: [],
         wrongShape: false,
         slow: false,
       }
@@ -158,6 +169,9 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
       })
       await page.route('**/api/scenarios?*', async (route) => {
         await route.fulfill({ json: api.scenarios })
+      })
+      await page.route('**/api/grammar/topics?*', async (route) => {
+        await route.fulfill({ json: api.grammarTopics })
       })
       await use(api)
       releaseSlow()

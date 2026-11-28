@@ -102,3 +102,34 @@ export const ListScenariosScenariosGetResponseItem = zod.object({
   "last_result": zod.union([zod.string(),zod.null()]).optional().describe('e.g. \'Last time: 2 corrections\'')
 }).describe('One scenario. The client groups the flat list into sections.')
 export const ListScenariosScenariosGetResponse = zod.array(ListScenariosScenariosGetResponseItem)
+
+
+/**
+ * The grammar topics of one level, in teaching order.
+ * @summary List Topics
+ */
+export const ListTopicsGrammarTopicsGetQueryParams = zod.object({
+  "language": zod.string().describe('Language code from GET /languages, e.g. \'xx\''),
+  "level": zod.string().describe('One of that language\'s levels')
+})
+
+export const listTopicsGrammarTopicsGetResponseTimesLearnedMin = 0;
+
+export const listTopicsGrammarTopicsGetResponseBestScoreOneCorrectMin = 0;
+
+export const listTopicsGrammarTopicsGetResponseBestScoreOneTotalMin = 1;
+
+
+
+export const ListTopicsGrammarTopicsGetResponseItem = zod.object({
+  "id": zod.string(),
+  "title": zod.string().describe('Topic name in the learner\'s own language'),
+  "example": zod.string().describe('A short example in the target language'),
+  "times_learned": zod.int().min(listTopicsGrammarTopicsGetResponseTimesLearnedMin).describe('How often the learner took the lesson'),
+  "best_score": zod.union([zod.object({
+  "correct": zod.int().min(listTopicsGrammarTopicsGetResponseBestScoreOneCorrectMin),
+  "total": zod.int().min(listTopicsGrammarTopicsGetResponseBestScoreOneTotalMin)
+}).describe('A test result, e.g. 8 of 10 correct.'),zod.null()]).optional().describe('Best test result; null until the first test'),
+  "passed": zod.boolean().describe('Whether the best score reaches the pass mark')
+}).describe('One grammar topic and the learner\'s progress on it.')
+export const ListTopicsGrammarTopicsGetResponse = zod.array(ListTopicsGrammarTopicsGetResponseItem)

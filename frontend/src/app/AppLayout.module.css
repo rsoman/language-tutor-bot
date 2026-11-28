@@ -13,8 +13,8 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  /* Room for the fixed tab bar (56px) plus a small gap. */
-  padding: var(--space-3) var(--space-4) calc(56px + var(--space-4));
+  /* Room for the fixed tab bar plus a small gap. */
+  padding: var(--space-3) var(--space-4) calc(var(--tab-bar-height) + var(--space-4));
 }
 
 /* Tablet and desktop: 40px side margins, tabs are back under the header. */

@@ -9,6 +9,7 @@ import type { z } from 'zod'
 import {
   LanguagesLanguagesGetResponse,
   ListScenariosScenariosGetResponse,
+  ListTopicsGrammarTopicsGetResponse,
 } from './generated/schemas'
 import type { Conversation, Turn, Word } from './tutorTypes'
 
@@ -17,6 +18,7 @@ export type { Conversation, Feedback, Segment, TutorMessage, Turn, Word } from '
 export type Language = z.infer<typeof LanguagesLanguagesGetResponse>[number]
 export type Level = Language['levels'][number]
 export type Scenario = z.infer<typeof ListScenariosScenariosGetResponse>[number]
+export type GrammarTopic = z.infer<typeof ListTopicsGrammarTopicsGetResponse>[number]
 
 /** An API error that keeps the HTTP status, so callers can tell "not found" from a failure. */
 export class ApiError extends Error {
@@ -78,4 +80,11 @@ export async function lookupWord(language: string, level: string, query: string)
 export async function fetchScenarios(language: string, level: string): Promise<Scenario[]> {
   const params = new URLSearchParams({ language, level })
   return ListScenariosScenariosGetResponse.parse(await getJson(`/scenarios?${params.toString()}`))
+}
+
+export async function fetchGrammarTopics(language: string, level: string): Promise<GrammarTopic[]> {
+  const params = new URLSearchParams({ language, level })
+  return ListTopicsGrammarTopicsGetResponse.parse(
+    await getJson(`/grammar/topics?${params.toString()}`),
+  )
 }

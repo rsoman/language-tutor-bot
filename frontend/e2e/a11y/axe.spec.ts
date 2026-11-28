@@ -194,3 +194,49 @@ for (const screen of screens) {
     expect(results.violations).toEqual([])
   })
 }
+
+// Spec 006: a passed topic, a learned one and one not started, with one ticked.
+const fakeGrammarTopics = [
+  {
+    id: 'g-1',
+    title: 'Topic one',
+    example: 'Example one',
+    times_learned: 2,
+    best_score: { correct: 8, total: 10 },
+    passed: true,
+  },
+  {
+    id: 'g-2',
+    title: 'Topic two',
+    example: 'Example two',
+    times_learned: 1,
+    best_score: null,
+    passed: false,
+  },
+  {
+    id: 'g-3',
+    title: 'Topic three',
+    example: 'Example three',
+    times_learned: 0,
+    best_score: null,
+    passed: false,
+  },
+]
+
+for (const screen of screens) {
+  test(`grammar topics have no axe violations on ${screen.name}`, async ({ page }) => {
+    await page.route('**/api/languages', (route) => route.fulfill({ json: fakeLanguages }))
+    await page.route('**/api/grammar/topics?*', (route) =>
+      route.fulfill({ json: fakeGrammarTopics }),
+    )
+    await page.setViewportSize({ width: screen.width, height: screen.height })
+    await page.addInitScript(() =>
+      localStorage.setItem('vaikhari.languageChoice', JSON.stringify({ code: 'qaa', level: 'L1' })),
+    )
+    await page.goto('/grammar')
+    await page.getByRole('checkbox', { name: 'Include Topic one in combination test' }).check()
+    await expect(page.getByTestId('combo-action')).toHaveText('Start test · 1 topic')
+    const results = await new AxeBuilder({ page }).analyze()
+    expect(results.violations).toEqual([])
+  })
+}
