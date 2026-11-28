@@ -16,12 +16,17 @@ class HealthResponse(BaseModel):
     environment: str
 
 
+class LevelOut(BaseModel):
+    code: str
+    rank: int  # 1 for the easiest level of the language's level system
+
+
 class LanguageOut(BaseModel):
     code: str
     name: str
     native_name: str
     level_system: str
-    levels: list[str]
+    levels: list[LevelOut]  # easiest first
 
 
 def create_app() -> FastAPI:
@@ -39,7 +44,9 @@ def create_app() -> FastAPI:
                 name=p.name,
                 native_name=p.native_name,
                 level_system=p.level_system.name,
-                levels=list(p.levels),
+                levels=[
+                    LevelOut(code=level, rank=p.level_system.rank(level)) for level in p.levels
+                ],
             )
             for p in LANGUAGES.values()
         ]

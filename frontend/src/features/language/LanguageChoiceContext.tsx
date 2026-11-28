@@ -39,7 +39,7 @@ export function LanguageChoiceProvider({ children }: { children: ReactNode }) {
   // A saved choice only counts if the backend still offers that language and level.
   const language = languages.find((l) => l.code === saved?.code)
   const choice =
-    language && saved && language.levels.includes(saved.level)
+    language && saved && language.levels.some((level) => level.code === saved.level)
       ? { language, level: saved.level }
       : null
 
@@ -53,9 +53,10 @@ export function LanguageChoiceProvider({ children }: { children: ReactNode }) {
     languages,
     choice,
     chooseLanguage(code) {
+      // Levels are sorted by rank (useLanguages), so the first one is the easiest.
       const picked = languages.find((l) => l.code === code)
-      const firstLevel = picked?.levels[0]
-      if (picked && firstLevel) update({ code: picked.code, level: firstLevel })
+      const easiest = picked?.levels[0]
+      if (picked && easiest) update({ code: picked.code, level: easiest.code })
     },
     chooseLevel(level) {
       if (choice) update({ code: choice.language.code, level })

@@ -20,5 +20,13 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // `pnpm test:coverage` (testing.md, coverage gate). The gate is on changed lines, so the
+    // report is lcov for line-by-line checks; there is no total threshold on purpose.
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/api/generated/**', 'src/main.tsx'],
+      reporter: ['text-summary', 'lcov'],
+    },
   },
 })

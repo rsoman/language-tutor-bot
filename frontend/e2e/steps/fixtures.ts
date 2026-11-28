@@ -8,12 +8,14 @@
  */
 import { test as base, createBdd } from 'playwright-bdd'
 
+export type FakeLevel = { code: string; rank: number }
+
 export type FakeLanguage = {
   code: string
   name: string
   native_name: string
   level_system: string
-  levels: string[]
+  levels: FakeLevel[]
 }
 
 export const EXAMPLISH: FakeLanguage = {
@@ -21,7 +23,10 @@ export const EXAMPLISH: FakeLanguage = {
   name: 'Examplish',
   native_name: 'Exemplar',
   level_system: 'TEST',
-  levels: ['L1', 'L2'],
+  levels: [
+    { code: 'L1', rank: 1 },
+    { code: 'L2', rank: 2 },
+  ],
 }
 
 export const SAMPLESE: FakeLanguage = {
@@ -29,7 +34,7 @@ export const SAMPLESE: FakeLanguage = {
   name: 'Samplese',
   native_name: 'Samplo',
   level_system: 'TEST',
-  levels: ['S1'],
+  levels: [{ code: 'S1', rank: 1 }],
 }
 
 export type FakeTutorMessage = { text: string; translation: string | null }
@@ -55,6 +60,10 @@ export type FakeApi = {
   feedback: FakeFeedback[]
   /** How many of the next turn requests should fail with a 500. */
   turnFailuresLeft: number
+  /** When true, /api/languages answers with JSON of the wrong shape. */
+  wrongShape: boolean
+  /** When true, /api/languages does not answer until the scenario ends. */
+  slow: boolean
 }
 
 export const test = base.extend<{ fakeApi: FakeApi }>({
@@ -69,12 +78,28 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         reply: { text: 'Default reply', translation: null },
         feedback: [],
         turnFailuresLeft: 0,
+        wrongShape: false,
+        slow: false,
       }
+      // A slow request is held until the scenario ends, then released.
+      let releaseSlow: () => void = () => {}
+      const slowDone = new Promise<void>((resolve) => {
+        releaseSlow = resolve
+      })
       let conversationCount = 0
       await page.route('**/api/languages', async (route) => {
+        if (api.slow) {
+          await slowDone
+          await route.abort().catch(() => {})
+          return
+        }
         if (api.failuresLeft > 0) {
           api.failuresLeft -= 1
           await route.fulfill({ status: 500, body: 'fake failure' })
+          return
+        }
+        if (api.wrongShape) {
+          await route.fulfill({ json: [{ code: 'xx', levels: 'not a list' }] })
           return
         }
         await route.fulfill({ json: api.languages })
@@ -95,6 +120,7 @@ export const test = base.extend<{ fakeApi: FakeApi }>({
         await route.fulfill({ json: { feedback: api.feedback, reply: api.reply } })
       })
       await use(api)
+      releaseSlow()
     },
     { auto: true },
   ],

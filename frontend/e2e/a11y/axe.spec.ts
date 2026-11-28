@@ -13,7 +13,13 @@ const modes = ['/conversation', '/grammar', '/vocabulary']
 // 'qaa' is a private-use language code (ISO 639-2 qaa to qtz): valid for the HTML lang
 // attribute, so axe's valid-lang rule passes, yet it names no real language.
 const fakeLanguages = [
-  { code: 'qaa', name: 'Examplish', native_name: 'Exemplar', level_system: 'TEST', levels: ['L1'] },
+  {
+    code: 'qaa',
+    name: 'Examplish',
+    native_name: 'Exemplar',
+    level_system: 'TEST',
+    levels: [{ code: 'L1', rank: 1 }],
+  },
 ]
 
 const sentence = [
