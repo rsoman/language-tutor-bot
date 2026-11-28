@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http, HttpResponse } from 'msw'
 
@@ -97,5 +97,29 @@ describe('WordHelp', () => {
     expect(params.get('language')).toBe('xx')
     expect(params.get('level')).toBe('L1')
     expect(params.get('query')).toBe('blorp')
+  })
+  test('a slow answer for an earlier word does not replace the answer for the newer word', async () => {
+    const pending = new Map<string, (response: Response) => void>()
+    server.use(
+      http.get('*/api/words/lookup', ({ request }) => {
+        const query = new URL(request.url).searchParams.get('query') ?? ''
+        return new Promise<Response>((resolve) => pending.set(query, resolve))
+      }),
+    )
+    const found = (headword: string) =>
+      HttpResponse.json({ headword, part_of_speech: 'noun', features: [], example: null })
+    renderWordHelp()
+    const user = await lookUp('first')
+    const input = screen.getByRole('textbox', { name: 'Word to look up' })
+    await user.clear(input)
+    await user.type(input, 'second{Enter}')
+    await vi.waitFor(() => expect(pending.size).toBe(2))
+
+    await act(async () => pending.get('second')?.(found('second-word')))
+    expect(await screen.findByText('second-word')).toBeInTheDocument()
+    await act(async () => pending.get('first')?.(found('first-word')))
+
+    expect(screen.getByText('second-word')).toBeInTheDocument()
+    expect(screen.queryByText('first-word')).not.toBeInTheDocument()
   })
 })
