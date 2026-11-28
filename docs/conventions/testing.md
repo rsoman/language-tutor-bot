@@ -1,6 +1,16 @@
 # Testing conventions: strict TDD, BDD acceptance tests
 
-## The rule: strict TDD
+Applies to all code, the owner's included. **B** = blocking, **N** = non-blocking.
+
+## Scenarios first, approved before code (B)
+
+1. The spec (`specs/NNN-name.md`) lists its test scenarios: positive, negative and edge cases,
+   as Given/When/Then.
+2. The spec goes in a **spec-only PR**. The owner approves it before any code PR for it starts.
+3. The code PR implements exactly those scenarios. Changing a scenario means changing the spec,
+   with the owner's approval. Never change acceptance criteria to make a test pass.
+
+## Strict TDD (B)
 
 Every change to behaviour follows red, green, refactor:
 
@@ -9,34 +19,50 @@ Every change to behaviour follows red, green, refactor:
 2. **Green.** Write the least code that makes it pass.
 3. **Refactor.** Clean up with the tests still green.
 
-For Claude Code this means: commit or show the failing test run before writing the implementation,
-and paste the red output into the PR under "Red evidence". A PR that adds behaviour without new
-tests is not ready for review.
+Paste the red output into the PR under "Red evidence". For the owner's LLM code, TDD means unit
+tests against a mocked provider. Quality of LLM behaviour is measured by evals, not unit tests.
 
-Exempt: pure docs, formatting, dependency bumps and config that has no behaviour. Say so in the PR.
+Exempt: pure docs, formatting, dependency bumps and config without behaviour. Say so in the PR.
 
-## Two layers of tests
+## Coverage gate (B)
 
-| Layer | What it checks | Backend | Frontend |
+- Every acceptance criterion has a test, named or tagged so the reader can match it to the spec.
+- At least 80% of **changed lines** are covered. We do not gate on total coverage.
+
+## Test layers and frameworks
+
+| Layer | Checks | Backend | Frontend |
 |---|---|---|---|
-| Acceptance (BDD) | The spec's Given/When/Then criteria, through the public API or UI | pytest-bdd: `tests/features/*.feature` + `tests/bdd/test_*_feature.py` | Playwright (Gherkin runner to be decided) |
-| Unit and component | One function, model or component | pytest: `tests/test_*.py` | Vitest + Testing Library |
+| Unit and component | One function, model or component | pytest (`tests/test_*.py`) | Vitest + Testing Library + MSW |
+| Contract | API schema matches both sides | Schema drift check in CI | Zod validation of responses |
+| Acceptance (BDD) | The spec's scenarios, through the public API or UI | pytest-bdd (`tests/features/*.feature`) | Playwright + playwright-bdd |
+| Accessibility | WCAG 2.1 AA | n/a | axe (`@axe-core/playwright`) |
+| Evals | AI behaviour quality | Owner's choice (later) | n/a |
 
-- Each acceptance criterion in a spec becomes one Gherkin scenario. Keep the wording identical so
-  a reader can match spec to test.
-- Step definitions stay thin: they call the API or UI and assert. Logic goes in fixtures or helpers.
-- Unit tests cover edge cases that would make the feature file noisy.
+- Each acceptance scenario keeps the spec's wording, so spec and test can be matched by eye.
+- Step definitions stay thin: call the API or UI and assert. Logic goes in fixtures or helpers.
 
-Whether every spec must have BDD scenarios is not enforced yet (decision deferred, 2026-11-26).
-New specs should use Given/When/Then criteria anyway, so converting is cheap.
+## Pipelines
 
-See `backend/tests/features/health.feature` and `backend/tests/bdd/test_health_feature.py` for
-the reference example.
+| Pipeline | When | Runs |
+|---|---|---|
+| Sanity | Every PR push | Lint, types, build, unit, contract, BDD tagged `@smoke` |
+| Regression | Merge to `main` | Everything in sanity plus the full BDD and axe suites |
+| Evals | Nightly, or the `run-evals` label | Evals (paid API, so never on every PR) |
 
-## General rules
+Tag a scenario `@smoke` when it covers the main happy path of a feature. Aim for one or two per
+feature, so sanity stays under about 5 minutes.
+
+## General rules (B)
 
 - Tests are deterministic. No network, no real clock, no randomness without a fixed seed.
 - CI never calls paid APIs. Mock the LLM provider behind its Protocol.
 - One behaviour per test. Name tests for the behaviour: `test_unknown_environment_is_rejected`.
-- Do not change a spec's acceptance criteria to make a test pass. Change the code, or raise it with the owner.
-- Fake languages in tests use made-up codes (`xx`) so tests do not depend on real language data.
+- Fake languages in tests use made-up codes (`xx` Examplish, `yy` Samplese; `qaa` for axe), so
+  tests do not depend on real language data.
+- UI tests find elements by role and label. Test ids only when no role fits (**N**). Tests run in
+  a fixed locale, so i18n does not break them.
+- Never skip, disable or quarantine a test to get green.
+
+Reference example: `backend/tests/features/health.feature` and
+`backend/tests/bdd/test_health_feature.py`.
