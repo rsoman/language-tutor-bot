@@ -16,12 +16,22 @@ Never edit `uv.lock` by hand. CI runs `uv sync --locked`, so commit `uv.lock` wi
 
 ## Code style
 
-- Python 3.12+. Use modern syntax: `list[str]`, `X | None`, `match` where it reads better.
-- Type every function signature. No `Any` without a comment saying why.
-- Prefer plain functions and frozen dataclasses. Add a class only when it holds state or a Protocol needs it.
-- Keep modules small and named for what they do (`languages.py`, `config.py`), not `utils.py`.
-- Docstrings on public modules, classes and functions: one line on what, a second paragraph on why if it is not obvious.
-- No clever one-liners. This repo is for learning; readable beats short.
+Shared rules (comments, naming, size, new-tech gate) are in `code-style.md`.
+**B** = blocking, **N** = non-blocking.
+
+- **B** Python 3.12+. Modern syntax: `list[str]`, `X | None`, `match` where it reads better.
+- **B** Type every function signature. No `Any` and no `# type: ignore` without a comment saying why.
+- **B** Every public module, class and function has a one-line docstring in plain English. Add a
+  second paragraph on why, if it is not obvious.
+- **B** Data crosses layer boundaries as Pydantic models or dataclasses, never loose dicts.
+- **B** Services raise domain errors; routers turn them into HTTP errors. No bare `except`.
+- **B** `logging`, never `print`.
+- **N** `async` only for I/O, and nothing blocking inside an `async` function.
+- **N** Prefer plain functions and frozen dataclasses. Add a class only when it holds state or a
+  Protocol needs it.
+- **N** Modules are small and named for what they do (`languages.py`, `config.py`), not `utils.py`.
+
+Layering, auth, data and AI rules: `architecture.md`.
 
 ## FastAPI
 

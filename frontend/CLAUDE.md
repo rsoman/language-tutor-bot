@@ -1,14 +1,15 @@
 # CLAUDE.md (frontend)
 
-Read the root `CLAUDE.md` first. This file adds frontend rules.
+Loaded when Claude works on files under `frontend/`. Read the root `CLAUDE.md` first.
 
-- Conventions: `docs/conventions/react.md`. Testing: `docs/conventions/testing.md`.
+- Stack: React + TypeScript (strict) + Vite, pnpm. Run commands from `frontend/`.
+- Checks before a push: `pnpm lint && pnpm typecheck && pnpm test`, plus `pnpm e2e` for UI changes.
 - Before building or changing a screen, check `docs/design/` and the design canvas linked there.
   Accepted design records are rules, not suggestions.
-- Stack: React + TypeScript (strict) + Vite, pnpm. Run commands from `frontend/`.
-- Checks before a PR: `pnpm lint && pnpm typecheck && pnpm test` (and `pnpm e2e` when Playwright tests exist).
-- Colours, spacing and fonts come from `src/styles/tokens.css`. Never hard-code a hex value in a component.
-- Target-language content (words, level names, articles) comes from the API, never from component code.
-- API types are generated (`pnpm gen:api`), never hand-written.
+- API types are generated (`bash scripts/export-openapi.sh`), never hand-written, except
+  `src/api/tutorTypes.ts` (see root `CLAUDE.md`, who writes what).
 
-The app itself is created by the first frontend spec. Until then this folder holds only this file.
+@../docs/conventions/code-style.md
+@../docs/conventions/react.md
+@../docs/conventions/testing.md
+@../docs/conventions/security.md

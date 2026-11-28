@@ -27,3 +27,18 @@ jobs:
         run: uv run pyright
       - name: Test
         run: uv run pytest
+      - name: Audit dependencies
+        # pip-audit has no severity filter, so any known vulnerability fails the build.
+        run: |
+          uv export --format requirements-txt --no-hashes --no-emit-project > /tmp/requirements.txt
+          uvx pip-audit -r /tmp/requirements.txt --strict
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
