@@ -80,4 +80,48 @@ describe('ConversationProvider', () => {
 
     expect(screen.getByText('status: starting')).toBeInTheDocument()
   })
+
+  test('a late reply from an older conversation is not added to a newer one for the same level', async () => {
+    let starts = 0
+    const pendingTurns: Array<(response: Response) => void> = []
+    server.use(
+      http.post('*/api/conversations', () => {
+        starts += 1
+        const body = {
+          id: `c-${starts}`,
+          opening: { text: `Opening ${starts}`, translation: null },
+        }
+        return HttpResponse.json(body, { status: 201 })
+      }),
+      http.post(
+        '*/api/conversations/:id/turns',
+        () => new Promise<Response>((resolve) => pendingTurns.push(resolve)),
+      ),
+    )
+    const controls: Controls = { current: null }
+    render(
+      <ConversationProvider>
+        <Probe onRender={(value) => (controls.current = value)} />
+      </ConversationProvider>,
+    )
+
+    // Send in the first L1 conversation, then go to L2 and back to L1 while the reply is pending.
+    act(() => controls.current?.ensureStarted('xx', 'L1'))
+    expect(await screen.findByText('status: ready')).toBeInTheDocument()
+    act(() => controls.current?.send('Hello'))
+    await vi.waitFor(() => expect(pendingTurns).toHaveLength(1))
+    act(() => controls.current?.ensureStarted('xx', 'L2'))
+    await vi.waitFor(() => expect(starts).toBe(2))
+    act(() => controls.current?.ensureStarted('xx', 'L1'))
+    await vi.waitFor(() => expect(controls.current?.state.conversationId).toBe('c-3'))
+
+    // The first conversation's reply arrives late.
+    const turn = { feedback: [], reply: { text: 'Stale reply', translation: null } }
+    await act(async () => pendingTurns[0]?.(HttpResponse.json(turn)))
+
+    const items = controls.current?.state.items ?? []
+    expect(items.map((item) => (item.role === 'tutor' ? item.message.text : item.text))).toEqual([
+      'Opening 3',
+    ])
+  })
 })
